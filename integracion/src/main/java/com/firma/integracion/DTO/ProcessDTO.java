@@ -14,10 +14,13 @@ import java.util.Date;
 @AllArgsConstructor
 
 public class ProcessDTO {
+    private String fileNumber;
     private long processId;
     private LocalDateTime dateProcess;
     private LocalDateTime dateLastAction;
     private String office;
     private String department;
-    private String legalSubjects;
+    private String processType;
+    private String plaintiff;
+    private String defendant;
 }
