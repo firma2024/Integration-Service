@@ -31,11 +31,11 @@ public class WebScraperService implements IWebScraperService {
     @Override
     public String getUrlJuzgado(String nameDespacho) throws IOException {
         System.out.println("Inicio de busqueda de link del juzgado");
-        List<String> listaPalabras = new ArrayList<>(Arrays.asList(nameDespacho.split("\\s+")));
-        int tama = listaPalabras.size();
-        listaPalabras.subList(tama - 2, listaPalabras.size()).clear();
-        listaPalabras.removeIf(word -> word.matches("\\d+"));
-        Map<String, String> mapEnlaces = new ConcurrentHashMap<>();
+        List<String> wordsList = new ArrayList<>(Arrays.asList(nameDespacho.split("\\s+")));
+        int tama = wordsList.size();
+        wordsList.subList(tama - 2, wordsList.size()).clear();
+        wordsList.removeIf(word -> word.matches("\\d+"));
+        Map<String, String> linksMap = new ConcurrentHashMap<>();
 
         trustAllCertificates();
         Connection connection = Jsoup.connect(urlRamaJudicial);
@@ -45,51 +45,51 @@ public class WebScraperService implements IWebScraperService {
 
         Document doc = connection.get();
 
-        Elements links = doc.select("a"); // Seleccionar todos los elementos <a>
+        Elements links = doc.select("a");
 
         for (Element link : links) {
-            String href = link.attr("href"); // Obtener el atributo href
-            String text = link.text(); // Obtener el texto dentro del elemento <a>
-            mapEnlaces.put(text, href);
+            String href = link.attr("href");
+            String text = link.text();
+            linksMap.put(text, href);
         }
 
         boolean containsEjecucion = false;
         boolean containsPromiscuo = false;
 
-        for (String palabra : listaPalabras) {
-            if (palabra.toLowerCase().contains("ejecución")) {
+        for (String word : wordsList) {
+            if (word.toLowerCase().contains("ejecución")) {
                 containsEjecucion = true;
             }
-            if (palabra.toLowerCase().contains("promiscuo")) {
+            if (word.toLowerCase().contains("promiscuo")) {
                 containsPromiscuo = true;
             }
-            for (String key : mapEnlaces.keySet()){
-                if (mapEnlaces.size() == 1){
+            for (String key : linksMap.keySet()){
+                if (linksMap.size() == 1){
                     break;
                 }
-                if (!key.toLowerCase().contains(palabra.toLowerCase())){
-                    mapEnlaces.remove(key);
+                if (!key.toLowerCase().contains(word.toLowerCase())){
+                    linksMap.remove(key);
                 }
             }
         }
 
         if (!containsEjecucion){
-            for (String key : mapEnlaces.keySet()){
+            for (String key : linksMap.keySet()){
                 if (key.toLowerCase().contains("ejecución")){
-                    mapEnlaces.remove(key);
+                    linksMap.remove(key);
                 }
             }
         }
         if(!containsPromiscuo){
-            for (String key : mapEnlaces.keySet()){
+            for (String key : linksMap.keySet()){
                 if (key.toLowerCase().contains("promiscuo")){
-                    mapEnlaces.remove(key);
+                    linksMap.remove(key);
                 }
             }
         }
 
-        if (mapEnlaces.size() == 1){
-            return mapEnlaces.get(mapEnlaces.keySet().iterator().next());
+        if (linksMap.size() == 1){
+            return linksMap.get(linksMap.keySet().iterator().next());
         }
 
         return null;
@@ -98,7 +98,7 @@ public class WebScraperService implements IWebScraperService {
     @Override
     public String getUrlEstados(String urlDespacho) throws IOException {
         System.out.println("Inicio de busqueda de link de estados");
-        List<String> enlaces = new ArrayList<>();
+        List<String> links = new ArrayList<>();
         trustAllCertificates();
         System.out.println(urlDespacho);
         Connection connection = Jsoup.connect(urlDespacho);
@@ -120,17 +120,17 @@ public class WebScraperService implements IWebScraperService {
                 }
                 i ++;
             }
-            Elements links = element.select("a");
-            for (Element link : links) {
-                String href = link.attr("href");
-                String text = link.text();
+            Elements aLinks = element.select("a");
+            for (Element a : aLinks) {
+                String href = a.attr("href");
+                String text = a.text();
                 if (text.contains(year)){
-                    enlaces.add(href);
+                    links.add(href);
                 }
             }
         }
         System.out.println("Enviando link de estados");
-        return urlRamaJudicialInicio + enlaces.get(indexEstados - 1);
+        return urlRamaJudicialInicio + links.get(indexEstados - 1);
     }
 
     private void trustAllCertificates() {
