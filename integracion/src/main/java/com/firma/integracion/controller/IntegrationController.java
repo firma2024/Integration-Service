@@ -10,13 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Controller
 @RequestMapping("/api/v1/integration/")
-public class IntegrarionController {
+public class IntegrationController {
 
     @Autowired
     private IWebScraperService webScraperService;
