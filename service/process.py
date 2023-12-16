@@ -31,7 +31,7 @@ class ProcessService:
         Args:
             officeName (str): Office name.
 
-        Returns:JUZGADO 017 CIVIL DEL CIRCUITO DE BOGOTÁ
+        Returns:
             str: url of the office.
         """
         words_list = officeName.split()
