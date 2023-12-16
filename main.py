@@ -1,53 +1,46 @@
-from bs4 import BeautifulSoup
-import requests
-import json
-from pprint import pprint
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+import time
 
-file_number="11001400305420210000800"
+print("Inicio de SeleniumService")
 
-CPNU ="https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Procesos"
-CPNU_INDIVIDUAL = CPNU[:-1]
+urlJuzgado = "https://www.ramajudicial.gov.co/juzgados-civiles-del-circuito"  # Reemplaza con tu cadena de texto
+nameDespacho = "JUZGADO 017 CIVIL DEL CIRCUITO DE BOGOTÁ"  # Reemplaza con tu URL
 
+wordsList = nameDespacho.split()
+city = wordsList[-1]
 
-#Get data of the process
-res=requests.get(f"{CPNU}/Consulta/NumeroRadicacion?numero={file_number}&SoloActivos=true&pagina=1")
-process = json.loads(res.text)
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
 
-#Get office (despacho)
-office = process["procesos"][0]["despacho"]
-print(f"Office: {office}")
-office = office[:-1]
-#Obtain process_id in the CPNU
-process_id = process["procesos"][0]["idProceso"]
-print(f"Process id: {process_id}")
+driver.get(urlJuzgado)
 
-#Obtain process details
-res = requests.get(f"{CPNU_INDIVIDUAL}/Detalle/{process_id}")
+links = driver.find_elements(By.TAG_NAME, "a")
 
-#Obtain actions (actuaciones)
-res = requests.get(f"{CPNU_INDIVIDUAL}/Actuaciones/{process_id}?pagina=1")
-res_actions = json.loads(res.text)
-actions=res_actions["actuaciones"]
-actions_with_docs = [action for action in actions if action["fechaInicial"] != None or action["fechaFinal"] != None]
+for link in links:
+    text = link.text
+    if city.lower() in text.lower():
+        link.click()
+        break
 
-#Get docs
-#This could be better with maybe if in, think more.
+time.sleep(3)
 
-#TODO Think how hijueputas obtain the url of the office (despacho)
-"""mapped_urls = {
-    "JUZGADO 054 CIVIL MUNICIPAL DE BOGOTÁ" : "https://www.ramajudicial.gov.co/portal/inicio/mapa/juzgados-civiles-municipales"
-    #...
-}"""
-res_html=requests.get("https://www.ramajudicial.gov.co/web/juzgado-054-civil-municipal-de-bogota", verify=False)
+valueDespacho = wordsList[1]
 
-soup = BeautifulSoup(res_html.text,"html.parser")
-autos_h4 = soup.find('h4', text='Autos')
+links = driver.find_elements(By.TAG_NAME, "a")
+for link in links:
+    text = link.text
+    href = link.get_attribute("href")
+    if valueDespacho.lower() in text.lower():
+        driver.quit()
+        print(href)
+        exit()
 
-if autos_h4:
-    next_div = autos_h4.find_next('div')
-
-    if next_div:
-        print(next_div)
-    else:
-        print("No div found after 'Autos' h4")
-        
+driver.quit()
+print("No se encontró el enlace correspondiente.")
