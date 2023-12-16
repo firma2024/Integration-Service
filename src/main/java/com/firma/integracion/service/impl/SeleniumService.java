@@ -23,9 +23,9 @@ public class SeleniumService implements ISeleniumService {
         List<String> wordsList = new ArrayList<>(Arrays.asList(nameDespacho.split("\\s+")));
         String city = wordsList.get(wordsList.size() - 1);
 
-        ChromeOptions options = new ChromeOptions();
+        FirefoxOptions options = new FirefoxOptions();
         options.addArguments("--headless"); // Ejecutar en modo headless
-        WebDriver driver = new ChromeDriver(options);
+        WebDriver driver = new FirefoxDriver(options);
 
         driver.get(urlJuzgado);
 
