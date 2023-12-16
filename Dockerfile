@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline
 
 # Copia los archivos fuente y compila la aplicación
 COPY src src
-RUN mvn package
+RUN mvn clean package
 
 # Etapa 2: Utiliza una imagen base de OpenJDK para Java 8
 FROM openjdk:8-jdk-alpine
