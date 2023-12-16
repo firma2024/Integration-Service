@@ -9,14 +9,3 @@ ARG GECKO_DRIVER_URL="https://github.com/mozilla/geckodriver/releases/download/$
 RUN apk --no-cache add curl tar \
     && curl -SL ${GECKO_DRIVER_URL} | tar -xz -C /usr/local/bin/
 
-# Establece el directorio de trabajo en /app
-WORKDIR /app
-
-# Copia el archivo JAR de tu aplicación Spring Boot al contenedor
-COPY target/integracion-0.0.1-SNAPSHOT.jar /app/app.jar
-
-# Expone el puerto 8080 (o el puerto que utilice tu aplicación Spring Boot)
-EXPOSE 8080
-
-# Comando para ejecutar la aplicación al iniciar el contenedor
-CMD ["java", "-jar", "app.jar"]
