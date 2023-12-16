@@ -12,13 +12,7 @@ RUN mvn clean install
 
 # Utiliza una imagen de Java como base para la ejecución
 FROM openjdk:17-jdk-alpine
-ARG GECKO_DRIVER_VERSION="v0.33.0"
-ARG GECKO_DRIVER_URL="https://github.com/mozilla/geckodriver/releases/download/${GECKO_DRIVER_VERSION}/geckodriver-${GECKO_DRIVER_VERSION}-linux64.tar.gz"
-
-# Descarga y descomprime el controlador de GeckoDriver
-RUN apk --no-cache add curl tar \
-    && curl -SL ${GECKO_DRIVER_URL} | tar -xz -C /usr/local/bin/
-# Establece el directorio de trabajo en /app
+FROM selenium/standalone-firefox:latest
 WORKDIR /app
 
 # Copia los archivos generados (incluyendo el .jar) desde la imagen anterior al contenedor final
