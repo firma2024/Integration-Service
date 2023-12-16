@@ -26,4 +26,4 @@ COPY --from=build /app/target/integracion-0.0.1-SNAPSHOT.jar /app
 # Define el comando a ejecutar cuando se inicie el contenedor
 CMD ["java", "-jar", "integracion-0.0.1-SNAPSHOT.jar"]
 
-EXPOSE $PORT
+EXPOSE 8080
