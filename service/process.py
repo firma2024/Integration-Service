@@ -8,7 +8,6 @@ import time
 import requests
 import json
 from typing import Dict
-import re
 
 import constants.constants as const
 from utils.utils import get_defendant_and_plaintiff
@@ -20,10 +19,14 @@ class ProcessService:
         self.chrome_options.add_argument('--no-sandbox')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
         self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.chrome_options)
+        self.driver = None
 
     def close(self):
-        self.driver.quit()
+        if self.driver:
+            self.driver.quit()
+            self.driver = None  # Establece el driver a None después de cerrarlo
+    def open(self):
+        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.chrome_options)
 
     def get_office_url(self, officeName: str)->str:
         """Get office url given name of the office.
@@ -34,6 +37,7 @@ class ProcessService:
         Returns:
             str: url of the office.
         """
+        self.open()
         words_list = officeName.split()
         city = words_list[-1]
 
