@@ -1,46 +1,23 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-import time
+from fastapi import FastAPI,HTTPException
+from service.process import ProcessService
+import uvicorn
 
-print("Inicio de SeleniumService")
+app = FastAPI()
+process_service = ProcessService()
 
-urlJuzgado = "https://www.ramajudicial.gov.co/juzgados-civiles-del-circuito"  # Reemplaza con tu cadena de texto
-nameDespacho = "JUZGADO 017 CIVIL DEL CIRCUITO DE BOGOTÁ"  # Reemplaza con tu URL
+@app.get("/getUrl/despacho={office_Name}")
+def get_office(office_Name: str):
+    url = process_service.get_office_url(office_Name)
+    if url:
+        return {"url_despacho":url}
+    else:
+        raise HTTPException(status_code=404, detail="Despacho no encontrado")
 
-wordsList = nameDespacho.split()
-city = wordsList[-1]
 
-chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
+@app.get("/getProcess/fileNumber={file_number}")
+def get_process(file_number):
+    return process_service.get_process_info(file_number)
 
-driver.get(urlJuzgado)
-
-links = driver.find_elements(By.TAG_NAME, "a")
-
-for link in links:
-    text = link.text
-    if city.lower() in text.lower():
-        link.click()
-        break
-
-time.sleep(3)
-
-valueDespacho = wordsList[1]
-
-links = driver.find_elements(By.TAG_NAME, "a")
-for link in links:
-    text = link.text
-    href = link.get_attribute("href")
-    if valueDespacho.lower() in text.lower():
-        driver.quit()
-        print(href)
-        exit()
-
-driver.quit()
-print("No se encontró el enlace correspondiente.")
+#ONLY DEBUG
+"""if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)"""

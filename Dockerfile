@@ -5,7 +5,7 @@ FROM python:3.10
 WORKDIR app
 
 # Copia los archivos de la aplicación al contenedor
-COPY . /app
+COPY . .
 
 # Instala las dependencias
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
@@ -15,8 +15,6 @@ RUN apt-get update && apt-get install -y wget unzip && \
     apt install -y ./google-chrome-stable_current_amd64.deb && \
     rm google-chrome-stable_current_amd64.deb && \
     apt-get clean
+EXPOSE 8000
 
-CMD ["python","main.py"]
-
-# Comando para ejecutar el script
-CMD ["python", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

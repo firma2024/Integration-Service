@@ -2,3 +2,6 @@ beautifulsoup4
 requests
 selenium
 webdriver_manager
+fastapi
+uvicorn[standard]
+gradio_client
