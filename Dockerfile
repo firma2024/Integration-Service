@@ -12,7 +12,6 @@ RUN mvn package
 
 # Etapa 2: Utiliza una imagen base de OpenJDK para Java 17
 FROM openjdk:17
-VOLUME /tmp
 EXPOSE 8080
 
 # Copia el JAR generado desde la etapa de compilación
