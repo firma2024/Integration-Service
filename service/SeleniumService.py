@@ -3,16 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-
-import time
-import requests
-import json
-from typing import Dict
-
 import constants.constants as const
-from utils.utils import get_defendant_and_plaintiff
+import time
 
-class ProcessService:
+class SeleniumService:
     def __init__(self):
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
@@ -28,20 +22,22 @@ class ProcessService:
     def open(self):
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.chrome_options)
 
-    def get_office_url(self, officeName: str)->str:
-        """Get office url given name of the office.
+    def get_office_url(self, office_name, url_juzgado):
+        """Get office url given name of the office and url_juzgado.
 
         Args:
             officeName (str): Office name.
+            url_juzgafo (str): juzgado url.
 
         Returns:
             str: url of the office.
         """
+        print("Inicio de SeleniumService")
         self.open()
-        words_list = officeName.split()
+        words_list = office_name.split()
         city = words_list[-1]
 
-        self.driver.get(const.URL_JUZGADO)
+        self.driver.get(url_juzgado)
 
         links = self.driver.find_elements(By.TAG_NAME, "a")
 
@@ -64,30 +60,3 @@ class ProcessService:
                 return href
         self.close()
         return None
-
-    def get_process_info(self, file_number: str) -> Dict[str, any]:
-        """Get process informatio by CPNU.
-
-        Args:
-            file_number (str): File number of the process.
-
-        Returns:
-            Dict[str, any]: Process informatio.
-        """
-        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=true"
-        res = requests.get(url_cpnu_file_number)
-        res_json = json.loads(res.text)
-        process = res_json["procesos"][0]
-
-        process["demandante"],process["demandado"] = get_defendant_and_plaintiff(res_json["procesos"][0]["sujetosProcesales"])
-
-        to_delete = ["idConexion", "esPrivado", "cantFilas","sujetosProcesales","llaveProceso"]
-        for key in to_delete:
-            if key in process:
-                del process[key]
-
-        url_cpnu_single_process_id = f"{const.URL_CPNU_SINGLE}{process['idProceso']}"
-        res = requests.get(url_cpnu_single_process_id)
-        res_json = json.loads(res.text)
-        process["tipoProceso"] = res_json["tipoProceso"]
-        return process
