@@ -1,23 +1,20 @@
-# Utiliza una imagen de Java como base para compilar
-FROM maven:latest AS build
+# Utiliza una imagen base de Python
+FROM python:3.10
 
-# Establece el directorio de trabajo en /app
-WORKDIR /app
+# Establece el directorio de trabajo
+WORKDIR app
 
-# Copia los archivos de tu proyecto al contenedor
-COPY . /app
+# Copia los archivos de la aplicación al contenedor
+COPY . .
 
-# Compila tu aplicación Java usando Maven
-RUN mvn clean install
+# Instala las dependencias
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
-# Utiliza una imagen de Java como base para la ejecución
-FROM openjdk:17-jdk-alpine
-FROM selenium/standalone-firefox:latest
-WORKDIR /app
+RUN apt-get update && apt-get install -y wget unzip && \
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    apt install -y ./google-chrome-stable_current_amd64.deb && \
+    rm google-chrome-stable_current_amd64.deb && \
+    apt-get clean
+EXPOSE 8000
 
-# Copia los archivos generados (incluyendo el .jar) desde la imagen anterior al contenedor final
-COPY --from=build /app/target/integracion-0.0.1-SNAPSHOT.jar /app
-# Define el comando a ejecutar cuando se inicie el contenedor
-CMD ["java", "-jar", "integracion-0.0.1-SNAPSHOT.jar"]
-
-EXPOSE 8080
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT
