@@ -35,5 +35,5 @@ def find_new_actuacion(file_number, date_actuacion, number_process):
     rest_service.get_last_actuacion(number_process, last_date_actuacion)
 
 #ONLY DEBUG
-"""if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)"""
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
