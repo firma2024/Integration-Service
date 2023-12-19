@@ -1,6 +1,7 @@
 import requests
 import json
 from typing import Dict
+from datetime import datetime
 
 import constants.constants as const
 from utils.utils import get_defendant_and_plaintiff
@@ -32,3 +33,43 @@ class RestService:
         res_json = json.loads(res.text)
         process["tipoProceso"] = res_json["tipoProceso"]
         return process
+    
+    def new_actuacion_process(self, file_number: str, date_actuacion_str):
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=true"
+        try:
+            response = requests.get(url_cpnu_file_number)
+            response.raise_for_status()
+            data = response.json()
+            procesos = data.get('procesos')
+            last_date_actuacion_str = procesos[0].get('fechaUltimaActuacion')
+            last_date_actuacion = datetime.fromisoformat(last_date_actuacion_str)
+            date_actuacion = datetime.fromisoformat(date_actuacion_str)
+
+            if last_date_actuacion > date_actuacion:
+                print("Nueva actuacion")
+                return True, last_date_actuacion
+            
+            return False
+
+        except requests.exceptions.RequestException as e:
+            print("Error al realizar la consulta:", e)
+            return False
+
+    def get_last_actuacion(self, number_process, last_date_actuacion):
+        url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{number_process}?pagina=1"
+        try:
+            response = requests.get(url_cpnu_actuaciones)
+            response.raise_for_status()
+            data = response.json()
+            actuaciones_list = data.get("actuaciones", [])
+            
+            for actuacion in actuaciones_list:
+                actuacion_date = datetime.fromisoformat(actuacion.get("fechaActuacion"))
+                if (actuacion_date == last_date_actuacion):
+                    print("Actuacion encontrada")
+                    
+
+                    break
+
+        except requests.exceptions.RequestException as e:
+            print("Error al realizar la consulta:", e)

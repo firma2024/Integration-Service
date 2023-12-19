@@ -27,6 +27,13 @@ def get_office(office_Name: str):
 def get_process(file_number):
     return rest_service.get_process_info(file_number)
 
+@app.get("/find/")
+def find_new_actuacion(file_number, date_actuacion, number_process):
+    exist_actuacion, last_date_actuacion = rest_service.new_actuacion_process(file_number, date_actuacion)
+    if not exist_actuacion:
+        raise HTTPException(status_code=404, detail="No se encontro actuacion")
+    rest_service.get_last_actuacion(number_process, last_date_actuacion)
+
 #ONLY DEBUG
 """if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)"""
