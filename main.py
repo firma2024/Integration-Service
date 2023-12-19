@@ -28,5 +28,5 @@ def get_process(file_number):
     return rest_service.get_process_info(file_number)
 
 #ONLY DEBUG
-"""if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)"""
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
