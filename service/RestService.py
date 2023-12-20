@@ -110,11 +110,11 @@ class RestService:
                 print("Nueva actuacion")
                 return True, last_date_actuacion
             
-            return False
+            return False, None
 
         except requests.exceptions.RequestException as e:
             print("Error al realizar la consulta:", e)
-            return False
+            return False, None
 
     def get_last_actuacion(self, number_process, last_date_actuacion):
         url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{number_process}?pagina=1"
