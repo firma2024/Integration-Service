@@ -1,14 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
-
-@dataclass
-class Actuacion:
-    nombreActuacion: str
-    anotacion: Optional[str]
-    fechaActuacion: datetime
-    fechaRegistro: datetime
-    proceso: Optional[str]
+from typing import List
+from model.Actuacion import Actuacion
 
 @dataclass
 class Proceso:

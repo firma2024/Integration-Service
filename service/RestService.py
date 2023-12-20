@@ -1,7 +1,8 @@
 import requests
 from fastapi import HTTPException
 from datetime import datetime
-from model.model import Proceso,Actuacion
+from model.Actuacion import Actuacion
+from model.Proceso import Proceso
 import requests
 import json
 from datetime import datetime
@@ -127,9 +128,31 @@ class RestService:
                 actuacion_date = datetime.fromisoformat(actuacion.get("fechaActuacion"))
                 if (actuacion_date == last_date_actuacion):
                     print("Actuacion encontrada")
-                    
+                    actuacion_name = actuacion.get("actuacion")
+                    anotacion = actuacion.get("anotacion")
+                    registro_date = datetime.fromisoformat(actuacion.get("fechaRegistro"))
+                    proceso = int(actuacion.get("llaveProceso"))
 
-                    break
+                    date_Inicial = actuacion.get("fechaInicial")
+                    date_Final = actuacion.get("fechaFinal")
+
+                    existDocument = exist_document(date_Inicial, date_Final)
+                    
+                    return Actuacion(
+                        nombreActuacion=actuacion_name,
+                        anotacion=anotacion,
+                        fechaActuacion=actuacion_date,
+                        fechaRegistro=registro_date,
+                        proceso=proceso,
+                        existDocument=existDocument
+                    )
 
         except requests.exceptions.RequestException as e:
             print("Error al realizar la consulta:", e)
+
+def exist_document(date_Inicial, date_Final) -> bool:
+    if date_Inicial is not None and date_Final is not None:
+        print("Existe documento")
+        return True
+    
+    return False
