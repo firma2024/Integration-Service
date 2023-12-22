@@ -38,7 +38,6 @@ class RestService:
         res_data = res_json["procesos"][0]
         department = res_data["departamento"]
         office = res_data["despacho"]
-        last_date_action =  res_data["fechaUltimaActuacion"]
         process_id = res_data["idProceso"]
         date_filed = res_data.pop("fechaProceso")
         
@@ -80,7 +79,6 @@ class RestService:
         process = Proceso(
             idProceso=process_id,
             numeroRadicado=file_number,
-            fechaUltimaActuacion=last_date_action,
             despacho=office,
             departamento=department,
             demandante=plaintiff,
