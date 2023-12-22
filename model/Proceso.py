@@ -7,7 +7,6 @@ from model.Actuacion import Actuacion
 class Proceso:
     idProceso: int
     numeroRadicado: str
-    fechaUltimaActuacion: datetime
     despacho: str
     departamento: str
     demandante: str
