@@ -1,9 +1,11 @@
 import requests
 from fastapi import HTTPException
 from datetime import datetime
-from model.model import Proceso,Actuacion
+from model.Actuacion import Actuacion
+from model.Proceso import Proceso
 import requests
 import json
+from datetime import datetime
 
 from fastapi import HTTPException
 import constants.constants as const
@@ -90,3 +92,65 @@ class RestService:
         )
         
         return process
+    
+    def new_actuacion_process(self, file_number: str, date_actuacion_str):
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=true"
+        try:
+            response = requests.get(url_cpnu_file_number)
+            response.raise_for_status()
+            data = response.json()
+            procesos = data.get('procesos')
+            last_date_actuacion_str = procesos[0].get('fechaUltimaActuacion')
+            last_date_actuacion = datetime.fromisoformat(last_date_actuacion_str)
+            date_actuacion = datetime.fromisoformat(date_actuacion_str)
+
+            if last_date_actuacion > date_actuacion:
+                print("Nueva actuacion")
+                return True, last_date_actuacion
+            
+            return False, None
+
+        except requests.exceptions.RequestException as e:
+            print("Error al realizar la consulta:", e)
+            return False, None
+
+    def get_last_actuacion(self, number_process, last_date_actuacion):
+        url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{number_process}?pagina=1"
+        try:
+            response = requests.get(url_cpnu_actuaciones)
+            response.raise_for_status()
+            data = response.json()
+            actuaciones_list = data.get("actuaciones", [])
+            
+            for actuacion in actuaciones_list:
+                actuacion_date = datetime.fromisoformat(actuacion.get("fechaActuacion"))
+                if (actuacion_date == last_date_actuacion):
+                    print("Actuacion encontrada")
+                    actuacion_name = actuacion.get("actuacion")
+                    anotacion = actuacion.get("anotacion")
+                    registro_date = datetime.fromisoformat(actuacion.get("fechaRegistro"))
+                    proceso = int(actuacion.get("llaveProceso"))
+
+                    date_Inicial = actuacion.get("fechaInicial")
+                    date_Final = actuacion.get("fechaFinal")
+
+                    existDocument = exist_document(date_Inicial, date_Final)
+                    
+                    return Actuacion(
+                        nombreActuacion=actuacion_name,
+                        anotacion=anotacion,
+                        fechaActuacion=actuacion_date,
+                        fechaRegistro=registro_date,
+                        proceso=proceso,
+                        existDocument=existDocument
+                    )
+
+        except requests.exceptions.RequestException as e:
+            print("Error al realizar la consulta:", e)
+
+def exist_document(date_Inicial, date_Final) -> bool:
+    if date_Inicial is not None and date_Final is not None:
+        print("Existe documento")
+        return True
+    
+    return False
