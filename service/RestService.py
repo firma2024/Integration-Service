@@ -24,7 +24,7 @@ class RestService:
             Proceso: Process information.
         """
         # Get information of the process.
-        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=true"
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
 
         if res.status_code == 503:
@@ -104,7 +104,7 @@ class RestService:
         return process
 
     def new_actuacion_process(self, file_number: str, date_actuacion_str):
-        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=true"
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         try:
             response = requests.get(url_cpnu_file_number)
             response.raise_for_status()
