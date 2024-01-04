@@ -140,7 +140,7 @@ class RestService:
                     registro_date = datetime.fromisoformat(
                         actuacion.get("fechaRegistro")
                     )
-                    proceso = int(actuacion.get("llaveProceso"))
+                    proceso = actuacion.get("llaveProceso")
 
                     existDocument = (
                         True
