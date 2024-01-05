@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from model.Actuacion import Actuacion
+from model.ActuacionEmail import ActuacionEmail
 from model.ProcesoBuscar import ProcesoBuscar
 from service.WebScraperService import WebScraperService
 from service.SeleniumService import SeleniumService
@@ -38,7 +39,7 @@ def get_process(file_number):
     return rest_service.get_process_info(file_number)
 
 
-@app.get("/find/actuaciones")
+@app.post("/find/actuaciones")
 def find_new_actuacion(request_body: List[ProcesoBuscar]):
     list_actuaciones = []
     for item in request_body:
@@ -53,20 +54,19 @@ def find_new_actuacion(request_body: List[ProcesoBuscar]):
     return list_actuaciones
 
 
-@app.get("/send_email")
-def send_email_test():
+@app.post("/send_email")
+def send_email_test(request_body: List[ActuacionEmail]):
+    list_actuaciones_send = []
     # FIXME delete this dummy instance
-    actuacion_ejemplo = Actuacion(
-        nombreActuacion="Nombre de la Actuación Ejemplo",
-        anotacion="Anotación de ejemplo",
-        fechaActuacion=datetime.now(),
-        fechaRegistro=datetime.now(),
-        proceso=123,
-        existDocument=True
-    )
-    # FIXME change this functionality
-    email_service.send_email("jdpluc302@gmail.com", actuacion_ejemplo)
-
+    for item in request_body:
+        # FIXME change this functionality
+        print("Enviando email...","actuacion", item.id)
+        send = email_service.send_email(item.emailAbogado, item)
+        if not send:
+            list_actuaciones_send.append(item.id)
+    
+    return list_actuaciones_send
+            
 
 # ONLY DEBUG
 if __name__ == "__main__":

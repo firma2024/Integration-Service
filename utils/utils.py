@@ -1,6 +1,7 @@
 import re
 from dataclasses import  asdict
-from model.Actuacion import Actuacion
+from model.ActuacionEmail import ActuacionEmail
+
 def get_defendant_and_plaintiff(plain_def:str) -> tuple[str, str]:
     """Obtain the plaintiff and defendant names by a string.
 
@@ -26,7 +27,7 @@ def get_defendant_and_plaintiff(plain_def:str) -> tuple[str, str]:
 
     return plaintiff,defendant
 
-def replace_placeholders_email(html_content:str,action:Actuacion):
+def replace_placeholders_email(html_content:str, action: ActuacionEmail):
     for placeholder, value in asdict(action).items():
         html_content = html_content.replace(f'{{{{ {placeholder} }}}}', str(value))
     return html_content
