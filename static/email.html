@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detalles de Actuación</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        h2 {
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Detalles de Actuación</h2>
+        <table>
+            <tr>
+                <th>ID</th>
+                <td>{{ id }}</td>
+            </tr>
+            <tr>
+                <th>Demandante</th>
+                <td>{{ demandante }}</td>
+            </tr>
+            <tr>
+                <th>Demandado</th>
+                <td>{{ demandado }}</td>
+            </tr>
+            <tr>
+                <th>Actuación</th>
+                <td>{{ actuacion }}</td>
+            </tr>
+            <tr>
+                <th>Radicado</th>
+                <td>{{ radicado }}</td>
+            </tr>
+            <tr>
+                <th>Anotación</th>
+                <td>{{ anotacion }}</td>
+            </tr>
+            <tr>
+                <th>Fecha de Actuación</th>
+                <td>{{ fechaActuacion }}</td>
+            </tr>
+            <tr>
+                <th>Nombre del Abogado</th>
+                <td>{{ nameAbogado }}</td>
+            </tr>
+            <tr>
+                <th>Enlace</th>
+                <td><a href="{{ link }}">Ver más detalles</a></td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>
+
