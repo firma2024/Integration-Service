@@ -62,7 +62,7 @@ def send_email_test(request_body: List[ActuacionEmail]):
         # FIXME change this functionality
         print("Enviando email...","actuacion", item.id)
         send = email_service.send_email(item.emailAbogado, item)
-        if not send:
+        if send:
             list_actuaciones_send.append(item.id)
     
     return list_actuaciones_send

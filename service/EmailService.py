@@ -16,7 +16,7 @@ class EmailService:
         msg = MIMEMultipart()
         msg.attach(MIMEText(html_content_formatted, 'html'))
 
-        msg['Subject'] = 'Prueba HTML'
+        msg['Subject'] = 'Actuación generada proceso [{}]'.format(action.radicado)
         msg['From'] = 'firma.software.soporte@gmail.com'
         msg['To'] = receiver
 
