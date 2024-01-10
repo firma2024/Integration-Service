@@ -33,27 +33,33 @@ class WebScraperService:
             text = link.get_text()
             links_map[text] = href
 
-        contains_ejecucion = False
-        contains_promiscuo = False
+        containsEjecucion = False
+        containsPromiscuo = False
 
         for word in words_list:
             if "ejecución" in word.lower():
-                contains_ejecucion = True
+                containsEjecucion = True
             if "promiscuo" in word.lower():
-                contains_promiscuo = True
+                containsPromiscuo = True
 
-            keys_to_remove = [key for key in links_map.keys() if word.lower() not in key.lower()]
-            for key in keys_to_remove:
-                links_map.pop(key, None)
+            for key in list(links_map.keys()):
+                if len(links_map) == 1:
+                    break
+                if word.lower() not in key.lower():
+                    del links_map[key]
 
-        if not contains_ejecucion:
-            links_map = {key: value for key, value in links_map.items() if "ejecución" not in key.lower()}
+        if not containsEjecucion:
+            for key in list(links_map.keys()):
+                if "ejecución" in key.lower():
+                    del links_map[key]
 
-        if not contains_promiscuo:
-            links_map = {key: value for key, value in links_map.items() if "promiscuo" not in key.lower()}
+        if not containsPromiscuo:
+            for key in list(links_map.keys()):
+                if "promiscuo" in key.lower():
+                    del links_map[key]
 
         if len(links_map) == 1:
-            return next(iter(links_map.values()))
+            return list(links_map.values())[0]
 
         return None
 

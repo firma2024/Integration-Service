@@ -23,6 +23,7 @@ class SeleniumService:
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.chrome_options)
 
     def get_office_url(self, office_name, url_juzgado):
+        print(url_juzgado)
         """Get office url given name of the office and url_juzgado.
 
         Args:

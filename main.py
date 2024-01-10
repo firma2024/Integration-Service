@@ -21,6 +21,7 @@ email_service = EmailService()
 
 @app.get("/getUrl/despacho={office_Name}")
 def get_office(office_Name: str):
+    print(office_Name)
     url_juzgado = web_scraper_service.get_url_juzgado(office_Name)
 
     while True:
