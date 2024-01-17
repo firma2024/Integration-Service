@@ -101,4 +101,4 @@ class WebScraperService:
                     links.append(href)
         
         print("Enviando enlace de estados")
-        return const.URL_RAMA_JUDICIAL_INICIO + links[index_estados]
+        return const.URL_RAMA_JUDICIAL_INICIO + links[index_estados - 1]

@@ -76,6 +76,12 @@ class RestService:
                         and action["fechaFinal"] is not None
                         else False
                     ),
+                    fechaInicia=datetime.strptime(
+                        action["fechaInicial"], "%Y-%m-%dT%H:%M:%S"
+                    ),
+                    fechaFinaliza=datetime.strptime(
+                        action["fechaFinal"], "%Y-%m-%dT%H:%M:%S"
+                    ),
                     proceso=None,
                 )
             )
@@ -155,6 +161,8 @@ class RestService:
                         fechaActuacion=actuacion_date,
                         fechaRegistro=registro_date,
                         proceso=proceso,
+                        fechaInicia=datetime.fromisoformat(actuacion["fechaInicial"]),
+                        fechaFinaliza=datetime.fromisoformat(actuacion["fechaFinal"]),
                         existDocument=existDocument,
                     )
 
