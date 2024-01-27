@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from model.Actuacion import Actuacion
 from model.ActuacionEmail import ActuacionEmail
 from model.ProcesoBuscar import ProcesoBuscar
@@ -9,15 +10,20 @@ from service.EmailService import EmailService
 import uvicorn
 from typing import List
 
-# FIXME delete this
-from datetime import datetime
 
-app = FastAPI()
 web_scraper_service = WebScraperService()
 selenium_service = SeleniumService()
 rest_service = RestService()
 email_service = EmailService()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Before handling request
+    selenium_service.get_regions_and_subregions()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/getUrl/despacho={office_Name}")
 def get_office(office_Name: str):
@@ -58,9 +64,7 @@ def find_new_actuacion(request_body: List[ProcesoBuscar]):
 @app.post("/send_email")
 def send_email_test(request_body: List[ActuacionEmail]):
     list_actuaciones_send = []
-    # FIXME delete this dummy instance
     for item in request_body:
-        # FIXME change this functionality
         print("Enviando email...","actuacion", item.id)
         send = email_service.send_email(item.emailAbogado, item)
         if send:
