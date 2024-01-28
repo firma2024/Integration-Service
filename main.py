@@ -16,14 +16,9 @@ selenium_service = SeleniumService()
 rest_service = RestService()
 email_service = EmailService()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Before handling request
-    selenium_service.get_regions_and_subregions()
-    yield
 
+app = FastAPI()
 
-app = FastAPI(lifespan=lifespan)
 
 @app.get("/getUrl/despacho={office_Name}")
 def get_office(office_Name: str):
@@ -65,13 +60,13 @@ def find_new_actuacion(request_body: List[ProcesoBuscar]):
 def send_email_test(request_body: List[ActuacionEmail]):
     list_actuaciones_send = []
     for item in request_body:
-        print("Enviando email...","actuacion", item.id)
+        print("Enviando email...", "actuacion", item.id)
         send = email_service.send_email(item.emailAbogado, item)
         if send:
             list_actuaciones_send.append(item.id)
-    
+
     return list_actuaciones_send
-            
+
 
 # ONLY DEBUG
 if __name__ == "__main__":

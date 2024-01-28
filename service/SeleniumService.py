@@ -62,12 +62,3 @@ class SeleniumService:
         self.close()
         return None
     
-    def get_regions_and_subregions(self):
-        self.open()
-        self.driver.get(const.URL_RAMA_JUDICIAL)
-
-        links = self.driver.find_elements(By.TAG_NAME, "a")
-
-        for link in links:
-            text = link.text
-            print(text)

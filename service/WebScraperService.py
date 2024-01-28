@@ -22,8 +22,7 @@ class WebScraperService:
         words_list = words_list[:tama - 2]
         links_map = {}
 
-        url_rama_judicial = const.URL_RAMA_JUDICIAL
-        response = requests.get(url_rama_judicial, verify=False)
+        response = requests.get(const.URL_RAMA_JUDICIAL, verify=False)
         doc = BeautifulSoup(response.text, 'html.parser')
 
         links = doc.find_all('a')
