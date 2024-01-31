@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from datetime import datetime
 from model.Actuacion import Actuacion
 from model.Proceso import Proceso
+from model.PreProceso import PreProceso
 import requests
 import json
 from datetime import datetime
@@ -14,7 +15,51 @@ from datetime import datetime
 
 
 class RestService:
-    def get_process_info(self, file_number: str) -> Proceso:
+
+    def get_process_info(self, file_number: str):
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
+        res = requests.get(url_cpnu_file_number)
+        if res.status_code == 503:
+            raise HTTPException(status_code=503, detail="Pagina no disponible")
+
+        res_json = json.loads(res.text)
+        if not res_json["procesos"]:
+            raise HTTPException(status_code=404, detail="Proceso no encontrado.")
+        
+        defendant, plaintiff = get_defendant_and_plaintiff(
+            res_json["procesos"][0]["sujetosProcesales"]
+        )
+
+        res_data = res_json["procesos"][0]
+        department = res_data["departamento"]
+        office = res_data["despacho"]
+        process_id = res_data["idProceso"]
+        date_filed = res_data.pop("fechaProceso")
+
+        # Get process type
+        url_cpnu_single_process_id = (
+            f"{const.URL_CPNU_SINGLE}Detalle/{res_data['idProceso']}"
+        )
+
+        res = requests.get(url_cpnu_single_process_id)
+        res_json = json.loads(res.text)
+
+        process = PreProceso(
+            idProceso=process_id,
+            numeroRadicado=file_number,
+            despacho=office,
+            departamento=department,
+            demandante=plaintiff,
+            demandado=defendant,
+            fechaRadicacion=date_filed,
+            tipoProceso=res_json["tipoProceso"],
+            ubicacionExpediente=res_json["ubicacion"],
+        )
+
+        return process
+
+
+    def get_all_process_info(self, file_number: str) -> Proceso:
         """Get process information by CPNU.
 
         Args:
@@ -76,12 +121,8 @@ class RestService:
                         and action["fechaFinal"] is not None
                         else False
                     ),
-                    fechaInicia=datetime.strptime(
-                        action["fechaInicial"], "%Y-%m-%dT%H:%M:%S"
-                    ),
-                    fechaFinaliza=datetime.strptime(
-                        action["fechaFinal"], "%Y-%m-%dT%H:%M:%S"
-                    ),
+                    fechaInicia=action["fechaInicial"],
+                    fechaFinaliza=action["fechaFinal"],
                     proceso=None,
                 )
             )
@@ -161,8 +202,8 @@ class RestService:
                         fechaActuacion=actuacion_date,
                         fechaRegistro=registro_date,
                         proceso=proceso,
-                        fechaInicia=datetime.fromisoformat(actuacion["fechaInicial"]),
-                        fechaFinaliza=datetime.fromisoformat(actuacion["fechaFinal"]),
+                        fechaInicia=actuacion["fechaInicial"],
+                        fechaFinaliza=actuacion["fechaFinal"],
                         existDocument=existDocument,
                     )
 

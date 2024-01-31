@@ -8,7 +8,7 @@ class Actuacion:
     anotacion: Optional[str]
     fechaActuacion: datetime
     fechaRegistro: datetime
-    fechaInicia: datetime
-    fechaFinaliza: datetime
+    fechaInicia: str
+    fechaFinaliza: str
     proceso: int
     existDocument: bool = field(default=False)

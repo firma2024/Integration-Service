@@ -39,6 +39,10 @@ def get_office(office_Name: str):
 def get_process(file_number):
     return rest_service.get_process_info(file_number)
 
+@app.get("/getAllProcess/fileNumber={file_number}")
+def get_process(file_number):
+    return rest_service.get_all_process_info(file_number)
+
 
 @app.post("/find/actuaciones")
 def find_new_actuacion(request_body: List[ProcesoBuscar]):
