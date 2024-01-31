@@ -10,15 +10,8 @@ URL = "https://www.ramajudicial.gov.co/portal/inicio"
 offices = ["Juzgados", "Tribunales", "Tierras",
            "Justicia", "Jurisdiccion", "Centro"]
 
-df = pd.read_csv("file.csv")
 
 
-fila_deseada = df[df['Nombre_despacho'] =="JUZGADO 001 CIVIL MUNICIPAL DE BELLO"]
-fila_deseada2 = df[df['Nombre_despacho'] == "JUZGADO 031 CIVIL MUNICIPAL DE BOGOTÁ"]
-print(fila_deseada["Link_Despacho"].iloc[0])
-print(fila_deseada2["Link_Despacho"].iloc[0])
-
-"""
 response = requests.get(URL, verify=False)
 doc = BeautifulSoup(response.text, 'html.parser')
 links = doc.find_all('a')
@@ -28,13 +21,16 @@ for link in links:
     text = link.get_text()
     links_map[text] = href
 res = {}
+not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda","Informaci\u00f3n","Tribunales"]
 for key in list(links_map.keys()):
     for office in offices:
-        if office in key and not "Consulta" in key and not "Corte" in key and not "Guia" in key:
-            res[key] = links_map[key]"""
+        if office in key and all(substring not in key for substring in not_offices):
+            res[key] = links_map[key]
 
+with open("real.json", 'w') as archivo:
+    # Escribir el objeto JSON en el archivo
+    json.dump(res, archivo)
 
-"""
 selenium_service = SeleniumService()
 selenium_service.open()
 with open("res.json", 'r') as archivo:
@@ -63,4 +59,4 @@ for key in res.keys():
             )], ignore_index=True)
         go_back = selenium_service.driver.find_element(By.ID, 'atras')
         go_back.click()
-        df.to_csv('file.csv', index=False)"""
+        df.to_csv('file.csv', index=False)
