@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 from datetime import datetime
 import re
-
+import json
 import constants.constants as const
 
 class WebScraperService:
@@ -101,3 +101,24 @@ class WebScraperService:
         
         print("Enviando enlace de estados")
         return const.URL_RAMA_JUDICIAL_INICIO + links[index_estados - 1]
+    
+    def get_court_offices(self):
+        offices = ["Juzgados", "Tribunales", "Tierras",
+                "Justicia", "Jurisdiccion", "Centro"]
+
+        response = requests.get(const.URL_RAMA_JUDICIAL , verify=False)
+        doc = BeautifulSoup(response.text, 'html.parser')
+        links = doc.find_all('a')
+        links_map={}
+        for link in links:
+            href = link.get('href')
+            text = link.get_text()
+            links_map[text] = href
+        res = {}
+        not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda","Informaci\u00f3n","Tribunales"]
+        for key in list(links_map.keys()):
+            for office in offices:
+                if office in key and all(substring not in key for substring in not_offices):
+                    res[key] = links_map[key]
+
+        return res

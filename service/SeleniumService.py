@@ -11,15 +11,18 @@ import time
 import pandas as pd
 import os
 import threading
+import numpy as np
+from service.WebScraperService import WebScraperService
 
 class SeleniumService:
-    def __init__(self):
+    def __init__(self,):
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument('--no-sandbox')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
         self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         self.driver = None
+        self.df = None
 
     def close(self):
         """Close instance of driver Chrome.
@@ -72,26 +75,36 @@ class SeleniumService:
                 return href
         self.close()
         return None
-
+    
+    def get_office_url_df(self,office_name):
+        res = self.df[self.df["Nombre_despacho"] == office_name]
+        return res["Link_Despacho"].iloc[0]
+    
     def get_offices(self):
-        json_offices = os.path.join(os.pardir,"Integration-Service/offices.json")
-        with open(json_offices, 'r') as file:
-            dict_offices = json.load(file)
+        web_scraper_service = WebScraperService()
+
+        dict_offices = web_scraper_service.get_court_offices()
+        list_offices = [value for value in dict_offices.values()]
+
         threads = []
-        for key,url_offices in dict_offices.items():
+        splited_offices = np.array_split(np.array(list_offices),4)
+        df_list = []
+        for office in splited_offices:
             # Get name of the office and url of the sub-offices
-            t = ScrapeThread(url_offices,key)
+            t = ScrapeThread(office,df_list)
             t.start()
             threads.append(t)
         for t in threads: 
             t.join()
+
+        res_df = pd.concat(df_list,ignore_index=False)
+        self.df=res_df
             
 class ScrapeThread(threading.Thread): 
-    def __init__(self, list_offices,file_name): 
+    def __init__(self, list_offices,df_list): 
         threading.Thread.__init__(self) 
         self.list_offices = list_offices 
-        self.file_name = file_name
-
+        self.df_list = df_list
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument('--no-sandbox')
@@ -99,9 +112,7 @@ class ScrapeThread(threading.Thread):
         self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
 
     def run(self): 
-        if not os.path.exists("Offices"):
-            os.makedirs("Offices")
-
+        lock = threading.Lock
         #Create empty dataframe
         columns = ["Ciudad_Mapa", "Nombre_despacho", "Link_Despacho"]
         df = pd.DataFrame(columns=columns)
@@ -131,10 +142,9 @@ class ScrapeThread(threading.Thread):
                     )], ignore_index=True)
                 go_back = self.driver.find_element(By.ID, 'atras')
                 go_back.click()
-
-        df.to_csv(os.path.join("Offices", f'{self.file_name}.csv'), index=False)
+        with lock:
+            self.df_list.append(df)
+        #df.to_csv(os.path.join("Offices", f'{self.file_name}.csv'), index=False)
         self.driver.close()
-        
-
-        
+                
          
