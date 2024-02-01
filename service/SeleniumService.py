@@ -101,7 +101,7 @@ class SeleniumService:
             df_list.append(df_item)
 
         self.df = pd.concat(df_list,ignore_index=True)  
-        
+
 class ScrapeThread(threading.Thread): 
     def __init__(self, list_offices,df_queue): 
         threading.Thread.__init__(self) 
@@ -115,6 +115,7 @@ class ScrapeThread(threading.Thread):
 
     def run(self): 
         #Create empty dataframe
+        print(f"Se inicia hilo {self.name}")
         columns = ["Ciudad_Mapa", "Nombre_despacho", "Link_Despacho"]
         df = pd.DataFrame(columns=columns)
 
