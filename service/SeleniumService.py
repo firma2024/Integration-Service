@@ -87,7 +87,7 @@ class SeleniumService:
 
         threads = []
         df_queue = queue.Queue() # Use queue to add the dataframes because is thread safe.
-        for office in split_list(list_offices,2):
+        for office in split_list(list_offices,1):
             # Get name of the office and url of the sub-offices
             t = ScrapeThread(office,df_queue)
             t.start()
