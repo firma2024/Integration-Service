@@ -19,8 +19,7 @@ email_service = EmailService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
-        
+    selenium_service.get_offices()
     asyncio.create_task(validate_month())
     yield
 
@@ -34,9 +33,6 @@ async def validate_month():
     while True:
         await asyncio.sleep(60*60*24*30) 
         await selenium_service.get_offices()
-@app.get("/")
-def get_office():
-    selenium_service.get_offices()
 
 @app.get("/getUrl/despacho={office_Name}")
 def get_office(office_Name: str):
