@@ -4,18 +4,17 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import constants.constants as const
+from utils.utils import split_list
 
 from typing import List
-import json
 import time
+import queue
 import pandas as pd
-import os
 import threading
-import numpy as np
 from service.WebScraperService import WebScraperService
 
 class SeleniumService:
-    def __init__(self,):
+    def __init__(self):
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument('--no-sandbox')
@@ -87,24 +86,27 @@ class SeleniumService:
         list_offices = [value for value in dict_offices.values()]
 
         threads = []
-        splited_offices = np.array_split(np.array(list_offices),4)
-        df_list = []
-        for office in splited_offices:
+        df_queue = queue.Queue() # Use queue to add the dataframes because is thread safe.
+        for office in split_list(list_offices,4):
             # Get name of the office and url of the sub-offices
-            t = ScrapeThread(office,df_list)
+            t = ScrapeThread(office,df_queue)
             t.start()
             threads.append(t)
         for t in threads: 
             t.join()
+        
+        df_list = []
+        while not df_queue.empty():
+            df_item = df_queue.get()
+            df_list.append(df_item)
 
-        res_df = pd.concat(df_list,ignore_index=False)
-        self.df=res_df
-            
+        self.df = pd.concat(df_list,ignore_index=True)  
+        
 class ScrapeThread(threading.Thread): 
-    def __init__(self, list_offices,df_list): 
+    def __init__(self, list_offices,df_queue): 
         threading.Thread.__init__(self) 
         self.list_offices = list_offices 
-        self.df_list = df_list
+        self.df_queue = df_queue
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument('--no-sandbox')
@@ -112,7 +114,6 @@ class ScrapeThread(threading.Thread):
         self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
 
     def run(self): 
-        lock = threading.Lock
         #Create empty dataframe
         columns = ["Ciudad_Mapa", "Nombre_despacho", "Link_Despacho"]
         df = pd.DataFrame(columns=columns)
@@ -142,8 +143,7 @@ class ScrapeThread(threading.Thread):
                     )], ignore_index=True)
                 go_back = self.driver.find_element(By.ID, 'atras')
                 go_back.click()
-        with lock:
-            self.df_list.append(df)
+        self.df_queue.put(df)
         #df.to_csv(os.path.join("Offices", f'{self.file_name}.csv'), index=False)
         self.driver.close()
                 

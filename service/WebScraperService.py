@@ -115,7 +115,7 @@ class WebScraperService:
             text = link.get_text()
             links_map[text] = href
         res = {}
-        not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda","Informaci\u00f3n","Tribunales"]
+        not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda","Informaci\u00f3n","Tribunales","Portal"]
         for key in list(links_map.keys()):
             for office in offices:
                 if office in key and all(substring not in key for substring in not_offices):

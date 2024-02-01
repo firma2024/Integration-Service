@@ -31,3 +31,13 @@ def replace_placeholders_email(html_content:str, action: ActuacionEmail):
     for placeholder, value in asdict(action).items():
         html_content = html_content.replace(f'{{{{ {placeholder} }}}}', str(value))
     return html_content
+
+def split_list(list,n):
+    long = len(list)
+    tamaño = long // n
+    residuo = long % n
+    inicio = 0
+    for i in range(n):
+        fin = inicio + tamaño + (i < residuo)
+        yield list[inicio:fin]
+        inicio = fin
