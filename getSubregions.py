@@ -5,14 +5,14 @@ import requests
 import json
 import time
 import pandas as pd
-
+import constants.constants as const
 URL = "https://www.ramajudicial.gov.co/portal/inicio"
 offices = ["Juzgados", "Tribunales", "Tierras",
            "Justicia", "Jurisdiccion", "Centro"]
 
 
-
-response = requests.get(URL, verify=False)
+response = requests.get(const.URL_RAMA_JUDICIAL , verify=False)
+"""response = requests.get(URL, verify=False)
 doc = BeautifulSoup(response.text, 'html.parser')
 links = doc.find_all('a')
 links_map={}
@@ -60,3 +60,4 @@ for key in res.keys():
         go_back = selenium_service.driver.find_element(By.ID, 'atras')
         go_back.click()
         df.to_csv('file.csv', index=False)
+"""

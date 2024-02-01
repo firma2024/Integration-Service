@@ -21,7 +21,7 @@ class SeleniumService:
         self.chrome_options.add_argument('--disable-dev-shm-usage')
         self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         self.driver = None
-        self.df = None
+        self.df = pd.read_csv('Data/offices.csv')
 
     def close(self):
         """Close instance of driver Chrome.
@@ -86,8 +86,9 @@ class SeleniumService:
         list_offices = [value for value in dict_offices.values()]
 
         threads = []
+        num_threads = 4
         df_queue = queue.Queue() # Use queue to add the dataframes because is thread safe.
-        for office in split_list(list_offices,1):
+        for office in split_list(list_offices,num_threads): # Split the list into the number of threads to be used to obtain the df
             # Get name of the office and url of the sub-offices
             t = ScrapeThread(office,df_queue)
             t.start()
@@ -100,7 +101,8 @@ class SeleniumService:
             df_item = df_queue.get()
             df_list.append(df_item)
 
-        self.df = pd.concat(df_list,ignore_index=True)  
+        self.df = pd.concat(df_list,ignore_index=True)
+        self.df.to_csv("Data/offices.csv",index=False)
 
 class ScrapeThread(threading.Thread): 
     def __init__(self, list_offices,df_queue): 
@@ -115,7 +117,6 @@ class ScrapeThread(threading.Thread):
 
     def run(self): 
         #Create empty dataframe
-        print(f"Se inicia hilo {self.name}")
         columns = ["Ciudad_Mapa", "Nombre_despacho", "Link_Despacho"]
         df = pd.DataFrame(columns=columns)
 

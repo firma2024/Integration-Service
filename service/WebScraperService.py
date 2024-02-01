@@ -105,8 +105,13 @@ class WebScraperService:
     def get_court_offices(self):
         offices = ["Juzgados", "Tribunales", "Tierras",
                 "Justicia", "Jurisdiccion", "Centro"]
-
-        response = requests.get(const.URL_RAMA_JUDICIAL , verify=False)
+        try:
+            response = requests.get(const.URL_RAMA_JUDICIAL , verify=False, timeout=15)
+        except requests.exceptions.Timeout:
+            # If requesting the page is taking so long, read the last json.
+            with open("Data/offices.json", 'r') as file:
+                res = json.load(file)
+                return res
         doc = BeautifulSoup(response.text, 'html.parser')
         links = doc.find_all('a')
         links_map={}
@@ -120,5 +125,9 @@ class WebScraperService:
             for office in offices:
                 if office in key and all(substring not in key for substring in not_offices):
                     res[key] = links_map[key]
+
+        # Update the json file
+        with open("Data/offices.json", 'w') as file:
+            json.dump(res, file)
 
         return res
