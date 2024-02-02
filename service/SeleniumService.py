@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from service.WebScraperService import WebScraperService
 import constants.constants as const
 from utils.utils import split_list
 
@@ -11,7 +12,7 @@ import time
 import queue
 import pandas as pd
 import threading
-from service.WebScraperService import WebScraperService
+from fastapi import HTTPException
 
 class SeleniumService:
     def __init__(self):
@@ -77,6 +78,8 @@ class SeleniumService:
     
     def get_office_url_df(self,office_name):
         res = self.df[self.df["Nombre_despacho"] == office_name]
+        if res.empty():
+            raise HTTPException (status_code=404,detail="Juzgado no encontrado")
         return res["Link_Despacho"].iloc[0]
     
     def get_offices(self):
