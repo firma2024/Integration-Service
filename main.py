@@ -20,7 +20,7 @@ email_service = EmailService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    selenium_service.get_offices()
+    #selenium_service.get_offices()
     asyncio.create_task(validate_month_and_midnight())
     yield
 
