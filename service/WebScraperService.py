@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 from datetime import datetime
 import re
-
+import json
 import constants.constants as const
 
 class WebScraperService:
@@ -22,8 +22,7 @@ class WebScraperService:
         words_list = words_list[:tama - 2]
         links_map = {}
 
-        url_rama_judicial = const.URL_RAMA_JUDICIAL
-        response = requests.get(url_rama_judicial, verify=False)
+        response = requests.get(const.URL_RAMA_JUDICIAL, verify=False)
         doc = BeautifulSoup(response.text, 'html.parser')
 
         links = doc.find_all('a')
@@ -102,3 +101,33 @@ class WebScraperService:
         
         print("Enviando enlace de estados")
         return const.URL_RAMA_JUDICIAL_INICIO + links[index_estados - 1]
+    
+    def get_court_offices(self):
+        offices = ["Juzgados", "Tribunales", "Tierras",
+                "Justicia", "Jurisdiccion", "Centro"]
+        try:
+            response = requests.get(const.URL_RAMA_JUDICIAL , verify=False, timeout=15)
+        except requests.exceptions.Timeout:
+            # If requesting the page is taking so long, read the last json.
+            with open("Data/offices.json", 'r') as file:
+                res = json.load(file)
+                return res
+        doc = BeautifulSoup(response.text, 'html.parser')
+        links = doc.find_all('a')
+        links_map={}
+        for link in links:
+            href = link.get('href')
+            text = link.get_text()
+            links_map[text] = href
+        res = {}
+        not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda","Informaci\u00f3n","Tribunales","Portal","Justicia"]
+        for key in list(links_map.keys()):
+            for office in offices:
+                if office in key and all(substring not in key for substring in not_offices):
+                    res[key] = links_map[key]
+
+        # Update the json file
+        with open("Data/offices.json", 'w') as file:
+            json.dump(res, file)
+
+        return res
