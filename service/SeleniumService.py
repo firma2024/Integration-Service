@@ -78,7 +78,7 @@ class SeleniumService:
     
     def get_office_url_df(self,office_name):
         res = self.df[self.df["Nombre_despacho"] == office_name]
-        if res.empty():
+        if res.empty:
             raise HTTPException (status_code=404,detail="Juzgado no encontrado")
         return res["Link_Despacho"].iloc[0]
     
