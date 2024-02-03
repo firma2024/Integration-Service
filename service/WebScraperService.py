@@ -5,8 +5,9 @@ import re
 import json
 import constants.constants as const
 
+
 class WebScraperService:
-    
+
     def get_url_juzgado(self, name_despacho):
         """Get url_juzgado given name of the despacho.
 
@@ -62,7 +63,6 @@ class WebScraperService:
 
         return None
 
-
     def get_url_estados(self, url_despacho):
         """Get url despchao given url despacho.
 
@@ -74,14 +74,14 @@ class WebScraperService:
         """
         print("Inicio de búsqueda de enlace de estados")
         links = []
-        
+
         print(url_despacho)
         response = requests.get(url_despacho, verify=False)
         doc = BeautifulSoup(response.content, 'html.parser')
-        
+
         index_estados = 0
         year = str(datetime.now().year)
-        
+
         elements = doc.find_all(class_="layouts level-1")
         for element in elements:
             i = 0
@@ -91,22 +91,23 @@ class WebScraperService:
                 if "Estados Electrónicos".lower() in text.lower():
                     index_estados = i
                 i += 1
-            
+
             a_links = element.select("a")
             for a in a_links:
                 href = a.get("href")
                 text = a.get_text()
                 if year in text:
                     links.append(href)
-        
+
         print("Enviando enlace de estados")
         return const.URL_RAMA_JUDICIAL_INICIO + links[index_estados - 1]
-    
+
     def get_court_offices(self):
         offices = ["Juzgados", "Tribunales", "Tierras",
-                "Justicia", "Jurisdiccion", "Centro"]
+                   "Justicia", "Jurisdiccion", "Centro"]
         try:
-            response = requests.get(const.URL_RAMA_JUDICIAL , verify=False, timeout=15)
+            response = requests.get(
+                const.URL_RAMA_JUDICIAL, verify=False, timeout=15)
         except requests.exceptions.Timeout:
             # If requesting the page is taking so long, read the last json.
             with open("Data/offices.json", 'r') as file:
@@ -114,13 +115,14 @@ class WebScraperService:
                 return res
         doc = BeautifulSoup(response.text, 'html.parser')
         links = doc.find_all('a')
-        links_map={}
+        links_map = {}
         for link in links:
             href = link.get('href')
             text = link.get_text()
             links_map[text] = href
         res = {}
-        not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda","Informaci\u00f3n","Tribunales","Portal","Justicia"]
+        not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda",
+                       "Informaci\u00f3n", "Tribunales", "Portal", "Justicia"]
         for key in list(links_map.keys()):
             for office in offices:
                 if office in key and all(substring not in key for substring in not_offices):

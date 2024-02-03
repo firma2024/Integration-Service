@@ -14,15 +14,18 @@ import pandas as pd
 import threading
 from fastapi import HTTPException
 
+
 class SeleniumService:
     def __init__(self):
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument('--no-sandbox')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
-        self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        self.chrome_options.add_argument(
+            '--disable-blink-features=AutomationControlled')
         self.driver = None
         self.df = pd.read_csv('Data/offices.csv')
+        self.lock = threading.Lock()
 
     def close(self):
         """Close instance of driver Chrome.
@@ -34,7 +37,8 @@ class SeleniumService:
     def open(self):
         """Create instance of Chrome.
         """
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.chrome_options)
+        self.driver = webdriver.Chrome(service=Service(
+            ChromeDriverManager().install()), options=self.chrome_options)
 
     def get_office_url(self, office_name, url_juzgado):
         print(url_juzgado)
@@ -75,56 +79,50 @@ class SeleniumService:
                 return href
         self.close()
         return None
-    
-    def get_office_url_df(self,office_name):
-        res = self.df[self.df["Nombre_despacho"] == office_name]
-        if res.empty:
-            raise HTTPException (status_code=404,detail="Juzgado no encontrado")
-        return res["Link_Despacho"].iloc[0]
-    
-    def get_offices(self):
+
+    def get_office_url_df(self, office_name):
+        with self.lock:
+            res = self.df[self.df["Nombre_despacho"] == office_name]
+            if res.empty:
+                raise HTTPException(
+                    status_code=404, detail="Juzgado no encontrado")
+            return res["Link_Despacho"].iloc[0]
+
+    async def get_offices(self):
+        """Get office links from page interactions using selenium.
+        """
         web_scraper_service = WebScraperService()
 
         dict_offices = web_scraper_service.get_court_offices()
         list_offices = [value for value in dict_offices.values()]
 
-        threads = []
         num_threads = 1
-        df_queue = queue.Queue() # Use queue to add the dataframes because is thread safe.
-        for office in split_list(list_offices,num_threads): # Split the list into the number of threads to be used to obtain the df
+        # Split the list into the number of threads to be used to update the df
+        for office in split_list(list_offices, num_threads):
             # Get name of the office and url of the sub-offices
-            t = ScrapeThread(office,df_queue)
+            t = ScrapeThread(office, self.df, self.lock)
             t.start()
-            threads.append(t)
-        for t in threads: 
-            t.join()
-        
-        df_list = []
-        while not df_queue.empty():
-            df_item = df_queue.get()
-            df_list.append(df_item)
 
-        self.df = pd.concat(df_list,ignore_index=True)
-        self.df.to_csv("Data/offices.csv",index=False)
 
-class ScrapeThread(threading.Thread): 
-    def __init__(self, list_offices,df_queue): 
-        threading.Thread.__init__(self) 
-        self.list_offices = list_offices 
-        self.df_queue = df_queue
+class ScrapeThread(threading.Thread):
+    def __init__(self, list_offices, df, lock):
+        threading.Thread.__init__(self)
+        self.list_offices = list_offices
+        self.df = df
+        self.lock = lock
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument('--no-sandbox')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
-        self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        self.chrome_options.add_argument(
+            '--disable-blink-features=AutomationControlled')
 
-    def run(self): 
-        #Create empty dataframe
-        columns = ["Ciudad_Mapa", "Nombre_despacho", "Link_Despacho"]
-        df = pd.DataFrame(columns=columns)
-
+    def run(self):
+        """Update dataframe while checking for duplicates and delete them.
+        """
         # Create chrome driver instance
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.chrome_options)
+        self.driver = webdriver.Chrome(service=Service(
+            ChromeDriverManager().install()), options=self.chrome_options)
         for office in self.list_offices:
             # Iterate in the list of urls and get the name of the office
             self.driver.get(office)
@@ -142,14 +140,13 @@ class ScrapeThread(threading.Thread):
                 lista_items = div.find_elements(By.TAG_NAME, 'li')
                 for li in lista_items:
                     a_tag = li.find_elements(By.TAG_NAME, 'a')
-                    df = pd.concat([df, pd.DataFrame(
-                        {"Ciudad_Mapa": [ciudad_mapa.text], "Nombre_despacho": [
-                            a_tag[0].text], "Link_Despacho": [a_tag[0].get_attribute("href")]}
-                    )], ignore_index=True)
+                    with self.lock:
+                        self.df = pd.concat([self.df, pd.DataFrame(
+                            {"Ciudad_Mapa": [ciudad_mapa.text], "Nombre_despacho": [
+                                a_tag[0].text], "Link_Despacho": [a_tag[0].get_attribute("href")]}
+                        )], ignore_index=True)
+                        self.df.drop_duplicates()
                 go_back = self.driver.find_element(By.ID, 'atras')
                 go_back.click()
-        self.df_queue.put(df)
-        #df.to_csv(os.path.join("Offices", f'{self.file_name}.csv'), index=False)
+                time.sleep(3)
         self.driver.close()
-                
-         
