@@ -23,8 +23,6 @@ async def lifespan(app: FastAPI):
     # Before the service start
     asyncio.create_task(validate_hours())
     yield
-    # Before the service stop
-    selenium_service.df.to_csv("Data/offices.csv", index=False)
 
 app = FastAPI(lifespan=lifespan)
 
