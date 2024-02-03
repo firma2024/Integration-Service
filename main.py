@@ -34,12 +34,10 @@ async def validate_hours():
         await asyncio.sleep(60*60*2)  # Wait two hours
         await selenium_service.get_offices()
 
-
-@app.get("/api/getUrl/despacho={office_Name}")
-def get_office(office_Name: str):
-    print(office_Name)
-    # url_juzgado = web_scraper_service.get_url_juzgado(office_Name)
-    url_court = selenium_service.get_office_url_df(office_Name)
+@app.get("/api/getUrl/despacho={office_name}")
+def get_office(office_name: str):
+    # url_juzgado = web_scraper_service.get_url_juzgado(office_name)
+    url_court = selenium_service.get_office_url_df(office_name)
     url_estados = web_scraper_service.get_url_estados(url_court)
     return {"url_despacho": url_estados}
 

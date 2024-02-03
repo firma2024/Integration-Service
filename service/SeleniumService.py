@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from service.WebScraperService import WebScraperService
 import constants.constants as const
-from utils.utils import split_list
+from utils.utils import split_list,clean_string
 
 from typing import List
 import time
@@ -81,6 +81,7 @@ class SeleniumService:
         return None
 
     def get_office_url_df(self, office_name):
+        office_name = clean_string(office_name)
         with self.lock:
             res = self.df[self.df["Nombre_despacho"] == office_name]
             if res.empty:
@@ -127,22 +128,22 @@ class ScrapeThread(threading.Thread):
             # Iterate in the list of urls and get the name of the office
             self.driver.get(office)
             # Get city list
-            div_principales_mapa = self.driver.find_element(
+            principal_div_map = self.driver.find_element(
                 By.CLASS_NAME, 'principalesMapa')
-            lista_items = div_principales_mapa.find_elements(By.TAG_NAME, 'li')
-            for item in lista_items:
+            item_list = principal_div_map.find_elements(By.TAG_NAME, 'li')
+            for item in item_list:
                 item.click()
                 time.sleep(3)
                 # Obtain name of the city
-                ciudad_mapa = self.driver.find_element(By.ID, 'titleD')
+                city_map = self.driver.find_element(By.ID, 'titleD')
 
                 div = self.driver.find_element(By.ID, 'selected')
-                lista_items = div.find_elements(By.TAG_NAME, 'li')
-                for li in lista_items:
+                item_list = div.find_elements(By.TAG_NAME, 'li')
+                for li in item_list:
                     a_tag = li.find_elements(By.TAG_NAME, 'a')
                     with self.lock:
                         self.df = pd.concat([self.df, pd.DataFrame(
-                            {"Ciudad_Mapa": [ciudad_mapa.text], "Nombre_despacho": [
+                            {"Ciudad_Mapa": [city_map.text], "Nombre_despacho": [
                                 a_tag[0].text], "Link_Despacho": [a_tag[0].get_attribute("href")]}
                         )], ignore_index=True)
                         self.df.drop_duplicates()
