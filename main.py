@@ -34,7 +34,7 @@ async def validate_hours():
         await asyncio.sleep(60*60*2)  # Wait two hours
         await selenium_service.get_offices()
 
-@app.get("/api/getUrl/despacho={office_name}")
+@app.get("/api/integration/getUrl/despacho={office_name}")
 def get_office(office_name: str):
     # url_juzgado = web_scraper_service.get_url_juzgado(office_name)
     url_court = selenium_service.get_office_url_df(office_name)
@@ -42,16 +42,16 @@ def get_office(office_name: str):
     return {"url_despacho": url_estados}
 
 
-@app.get("/api/getProcess/fileNumber={file_number}")
+@app.get("/api/integration/getProcess/fileNumber={file_number}")
 def get_process(file_number):
     return rest_service.get_process_info(file_number)
 
-@app.get("/getAllProcess/fileNumber={file_number}")
+@app.get("/api/integration/getAllProcess/fileNumber={file_number}")
 def get_process(file_number):
     return rest_service.get_all_process_info(file_number)
 
 
-@app.post("/api/find/actuaciones")
+@app.post("/api/integration/find/actuaciones")
 def find_new_actuacion(request_body: List[ProcesoBuscar]):
     list_actuaciones = []
     for item in request_body:
@@ -66,7 +66,7 @@ def find_new_actuacion(request_body: List[ProcesoBuscar]):
     return list_actuaciones
 
 
-@app.post("/api/send_email")
+@app.post("/api/integration/send_email")
 def send_email_test(request_body: List[ActuacionEmail]):
     list_actuaciones_send = []
     for item in request_body:
