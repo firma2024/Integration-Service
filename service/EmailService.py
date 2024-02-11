@@ -34,6 +34,7 @@ class EmailService:
 
         try:
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
+                print(os.getenv("EMAIL_PASSWORD"))
                 smtp_server.login('firma.software.soporte@gmail.com', os.getenv("EMAIL_PASSWORD"))
                 smtp_server.sendmail('firma.software.soporte@gmail.com', receiver, msg.as_string())
             print("El correo se envió correctamente a", receiver)
