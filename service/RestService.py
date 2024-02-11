@@ -1,31 +1,42 @@
+from typing import Optional, Union
 import requests
 from fastapi import HTTPException
 from datetime import datetime
-from model.Actuacion import Actuacion
-from model.Proceso import Proceso
-from model.PreProceso import PreProceso
+from model.model import Actuacion, Proceso, PreProceso
 import requests
 import json
-from datetime import datetime
 
 from fastapi import HTTPException
 import constants.constants as const
 from utils.utils import get_defendant_and_plaintiff
-from datetime import datetime
 
 
 class RestService:
 
-    def get_process_info(self, file_number: str):
-        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
+    def get_process_info(self, file_number: str) -> Proceso:
+        """Get process information by CPNU.
+
+        Args:
+            file_number (str): File number of the process.
+
+        Raises:
+            HTTPException 503: When the CPNU rest API is down.
+            HTTPException 404: When the process does not exit in the CPNU.
+
+        Returns:
+            Proceso: Process information.
+        """
+        url_cpnu_file_number = f"{const.URL_CPNU}{
+            file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
         if res.status_code == 503:
             raise HTTPException(status_code=503, detail="Pagina no disponible")
 
         res_json = json.loads(res.text)
         if not res_json["procesos"]:
-            raise HTTPException(status_code=404, detail="Proceso no encontrado.")
-        
+            raise HTTPException(
+                status_code=404, detail="Proceso no encontrado.")
+
         defendant, plaintiff = get_defendant_and_plaintiff(
             res_json["procesos"][0]["sujetosProcesales"]
         )
@@ -58,18 +69,21 @@ class RestService:
 
         return process
 
-
     def get_all_process_info(self, file_number: str) -> Proceso:
-        """Get process information by CPNU.
+        """Get process information and actions by CPNU.
 
         Args:
             file_number (str): File number of the process.
 
+        Raises:
+            HTTPException 503: When the CPNU rest API is down.
+            HTTPException 404: When the process does not exit in the CPNU.
+
         Returns:
-            Proceso: Process information.
+            Proceso: Process information with actions.
         """
-        # Get information of the process.
-        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
+        url_cpnu_file_number = f"{const.URL_CPNU}{
+            file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
 
         if res.status_code == 503:
@@ -77,7 +91,8 @@ class RestService:
 
         res_json = json.loads(res.text)
         if not res_json["procesos"]:
-            raise HTTPException(status_code=404, detail="Proceso no encontrado.")
+            raise HTTPException(
+                status_code=404, detail="Proceso no encontrado.")
 
         defendant, plaintiff = get_defendant_and_plaintiff(
             res_json["procesos"][0]["sujetosProcesales"]
@@ -91,14 +106,16 @@ class RestService:
 
         # Get actions
         url_cpnu_single_actions = (
-            f"{const.URL_CPNU_SINGLE}Actuaciones/{res_data['idProceso']}?pagina=1"
+            f"{const.URL_CPNU_SINGLE}Actuaciones/{
+                res_data['idProceso']}?pagina=1"
         )
         res = requests.get(url_cpnu_single_actions)
         res_json = json.loads(res.text)
         actions = res_json["actuaciones"]
         last_actions = sorted(
             actions,
-            key=lambda x: datetime.strptime(x["fechaActuacion"], "%Y-%m-%dT%H:%M:%S"),
+            key=lambda x: datetime.strptime(
+                x["fechaActuacion"], "%Y-%m-%dT%H:%M:%S"),
             reverse=True,
         )
         last_actions = last_actions[:10]
@@ -150,28 +167,56 @@ class RestService:
 
         return process
 
-    def new_actuacion_process(self, file_number: str, date_actuacion_str):
-        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
+    def new_actuacion_process(self, file_number: str, date_actuacion_str: str) -> Optional[Union[str, None]]:
+        """Validate if a process has a action.
+
+        Args:
+            file_number (str): File number of the process.
+            date_actuacion_str (str): Date of the actual action detected.
+
+        Raises:
+            HTTPException: 503 When the CPNU rest API is down.
+
+        Returns:
+            Optional[Union[str, None]]: str if action exists, else None.
+        """
+        url_cpnu_file_number = f"{const.URL_CPNU}{
+            file_number}&SoloActivos=false"
         try:
             response = requests.get(url_cpnu_file_number)
             response.raise_for_status()
             data = response.json()
             procesos = data.get("procesos")
             last_date_actuacion_str = procesos[0].get("fechaUltimaActuacion")
-            last_date_actuacion = datetime.fromisoformat(last_date_actuacion_str)
+            last_date_actuacion = datetime.fromisoformat(
+                last_date_actuacion_str)
             date_actuacion = datetime.fromisoformat(date_actuacion_str)
 
             if last_date_actuacion > date_actuacion:
                 print("Nueva actuacion")
-                return True, last_date_actuacion
+                return last_date_actuacion
 
-            return False, None
+            return None
 
         except requests.exceptions.RequestException as e:
-            raise HTTPException(503, detail=f"Error al realizar la consulta: {e}")
+            raise HTTPException(
+                503, detail=f"Error al realizar la consulta: {e}")
 
-    def get_last_actuacion(self, number_process, last_date_actuacion):
-        url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{number_process}?pagina=1"
+    def get_last_actuacion(self, number_process: str, last_date_actuacion: str) -> Actuacion:
+        """Get last action of a process.
+
+        Args:
+            number_process (str): Process number.
+            last_date_actuacion (str): Last date action has an update.
+
+        Raises:
+            HTTPException: 503 When the CPNU rest API is down.
+
+        Returns:
+            Actuacion: Action details.
+        """
+        url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{
+            number_process}?pagina=1"
         try:
             response = requests.get(url_cpnu_actuaciones)
             response.raise_for_status()
@@ -179,7 +224,8 @@ class RestService:
             actuaciones_list = data.get("actuaciones", [])
 
             for actuacion in actuaciones_list:
-                actuacion_date = datetime.fromisoformat(actuacion.get("fechaActuacion"))
+                actuacion_date = datetime.fromisoformat(
+                    actuacion.get("fechaActuacion"))
                 if actuacion_date == last_date_actuacion:
                     print("Actuacion encontrada")
                     actuacion_name = actuacion.get("actuacion")
@@ -208,4 +254,5 @@ class RestService:
                     )
 
         except requests.exceptions.RequestException as e:
-            raise HTTPException(503, detail=f"Error al realizar la consulta: {e}")
+            raise HTTPException(
+                503, detail=f"Error al realizar la consulta: {e}")
