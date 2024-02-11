@@ -82,8 +82,7 @@ class RestService:
         Returns:
             Proceso: Process information with actions.
         """
-        url_cpnu_file_number = f"{const.URL_CPNU}{
-            file_number}&SoloActivos=false"
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
 
         if res.status_code == 503:
@@ -106,8 +105,7 @@ class RestService:
 
         # Get actions
         url_cpnu_single_actions = (
-            f"{const.URL_CPNU_SINGLE}Actuaciones/{
-                res_data['idProceso']}?pagina=1"
+            f"{const.URL_CPNU_SINGLE}Actuaciones/{res_data['idProceso']}?pagina=1"
         )
         res = requests.get(url_cpnu_single_actions)
         res_json = json.loads(res.text)
@@ -180,8 +178,7 @@ class RestService:
         Returns:
             Optional[Union[str, None]]: str if action exists, else None.
         """
-        url_cpnu_file_number = f"{const.URL_CPNU}{
-            file_number}&SoloActivos=false"
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         try:
             response = requests.get(url_cpnu_file_number)
             response.raise_for_status()
@@ -215,8 +212,7 @@ class RestService:
         Returns:
             Actuacion: Action details.
         """
-        url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{
-            number_process}?pagina=1"
+        url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{number_process}?pagina=1"
         try:
             response = requests.get(url_cpnu_actuaciones)
             response.raise_for_status()

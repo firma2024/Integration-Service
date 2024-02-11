@@ -98,7 +98,7 @@ def find_new_actuacion(request_body: List[ProcesoBuscar]) -> List[Actuacion]:
 
 
 @app.post("/api/integration/send_email")
-def send_email(request_body: List[ActuacionEmail]) -> List[ActuacionEmail]:
+def send_email(request_body: List[ActuacionEmail]) :
     """Send email when an logic detect an update action.
 
     Args:
