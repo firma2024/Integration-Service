@@ -50,8 +50,10 @@ class RestService:
         url_cpnu_single_process_id = (
             f"{const.URL_CPNU_SINGLE}Detalle/{res_data['idProceso']}"
         )
-
-        res = requests.get(url_cpnu_single_process_id)
+        try:
+            res = requests.get(url_cpnu_single_process_id)
+        except requests.exceptions.ConnectTimeout:
+            raise HTTPException(status_code=503, detail="Pagina no disponible")
         res_json = json.loads(res.text)
 
         process = PreProceso(
@@ -106,7 +108,10 @@ class RestService:
         url_cpnu_single_actions = (
             f"{const.URL_CPNU_SINGLE}Actuaciones/{res_data['idProceso']}?pagina=1"
         )
-        res = requests.get(url_cpnu_single_actions)
+        try:
+            res = requests.get(url_cpnu_single_actions)
+        except requests.exceptions.ConnectTimeout:
+            raise HTTPException(status_code=503, detail="Pagina no disponible")
         res_json = json.loads(res.text)
         actions = res_json["actuaciones"]
         last_actions = sorted(
@@ -145,8 +150,10 @@ class RestService:
         url_cpnu_single_process_id = (
             f"{const.URL_CPNU_SINGLE}Detalle/{res_data['idProceso']}"
         )
-
-        res = requests.get(url_cpnu_single_process_id)
+        try:
+            res = requests.get(url_cpnu_single_process_id)
+        except requests.exceptions.ConnectTimeout:
+            raise HTTPException(status_code=503, detail="Pagina no disponible")
         res_json = json.loads(res.text)
 
         process = Proceso(
