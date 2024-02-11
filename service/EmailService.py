@@ -4,6 +4,9 @@ from utils.utils import replace_placeholders_email
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+import os
+load_dotenv()
 class EmailService:
     def send_email(self, receiver: str, action: ActuacionEmail)->bool:
         """Send email with the HTML format.
@@ -31,7 +34,7 @@ class EmailService:
 
         try:
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
-                smtp_server.login('firma.software.soporte@gmail.com', "bwun nhzu xxet rpev")
+                smtp_server.login('firma.software.soporte@gmail.com', os.getenv("EMAIL_PASSWORD"))
                 smtp_server.sendmail('firma.software.soporte@gmail.com', receiver, msg.as_string())
             print("El correo se envió correctamente a", receiver)
             return True

@@ -33,8 +33,7 @@ class RestService:
 
         res_json = json.loads(res.text)
         if not res_json["procesos"]:
-            raise HTTPException(
-                status_code=404, detail="Proceso no encontrado.")
+            raise HTTPException(status_code=404, detail="Proceso no encontrado.")
 
         defendant, plaintiff = get_defendant_and_plaintiff(
             res_json["procesos"][0]["sujetosProcesales"]
@@ -91,8 +90,7 @@ class RestService:
 
         res_json = json.loads(res.text)
         if not res_json["procesos"]:
-            raise HTTPException(
-                status_code=404, detail="Proceso no encontrado.")
+            raise HTTPException(status_code=404, detail="Proceso no encontrado.")
 
         defendant, plaintiff = get_defendant_and_plaintiff(
             res_json["procesos"][0]["sujetosProcesales"]
@@ -116,8 +114,7 @@ class RestService:
         actions = res_json["actuaciones"]
         last_actions = sorted(
             actions,
-            key=lambda x: datetime.strptime(
-                x["fechaActuacion"], "%Y-%m-%dT%H:%M:%S"),
+            key=lambda x: datetime.strptime(x["fechaActuacion"], "%Y-%m-%dT%H:%M:%S"),
             reverse=True,
         )
         last_actions = last_actions[:10]
@@ -171,7 +168,9 @@ class RestService:
 
         return process
 
-    def new_actuacion_process(self, file_number: str, date_actuacion_str: str) -> Optional[Union[str, None]]:
+    def new_actuacion_process(
+        self, file_number: str, date_actuacion_str: str
+    ) -> Optional[Union[str, None]]:
         """Validate if a process has a action.
 
         Args:
@@ -191,8 +190,7 @@ class RestService:
             data = response.json()
             procesos = data.get("procesos")
             last_date_actuacion_str = procesos[0].get("fechaUltimaActuacion")
-            last_date_actuacion = datetime.fromisoformat(
-                last_date_actuacion_str)
+            last_date_actuacion = datetime.fromisoformat(last_date_actuacion_str)
             date_actuacion = datetime.fromisoformat(date_actuacion_str)
 
             if last_date_actuacion > date_actuacion:
@@ -202,10 +200,11 @@ class RestService:
             return None
 
         except requests.exceptions.RequestException as e:
-            raise HTTPException(
-                503, detail=f"Error al realizar la consulta: {e}")
+            raise HTTPException(503, detail=f"Error al realizar la consulta: {e}")
 
-    def get_last_actuacion(self, number_process: str, last_date_actuacion: str) -> Actuacion:
+    def get_last_actuacion(
+        self, number_process: str, last_date_actuacion: str
+    ) -> Actuacion:
         """Get last action of a process.
 
         Args:
@@ -226,8 +225,7 @@ class RestService:
             actuaciones_list = data.get("actuaciones", [])
 
             for actuacion in actuaciones_list:
-                actuacion_date = datetime.fromisoformat(
-                    actuacion.get("fechaActuacion"))
+                actuacion_date = datetime.fromisoformat(actuacion.get("fechaActuacion"))
                 if actuacion_date == last_date_actuacion:
                     print("Actuacion encontrada")
                     actuacion_name = actuacion.get("actuacion")
@@ -256,5 +254,4 @@ class RestService:
                     )
 
         except requests.exceptions.RequestException as e:
-            raise HTTPException(
-                503, detail=f"Error al realizar la consulta: {e}")
+            raise HTTPException(503, detail=f"Error al realizar la consulta: {e}")
