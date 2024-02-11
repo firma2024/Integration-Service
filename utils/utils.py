@@ -1,6 +1,6 @@
 import re
 from dataclasses import asdict
-from model.ActuacionEmail import ActuacionEmail
+from model.model import ActuacionEmail
 from typing import List
 
 
