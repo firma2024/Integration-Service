@@ -26,8 +26,7 @@ class RestService:
         Returns:
             Proceso: Process information.
         """
-        url_cpnu_file_number = f"{const.URL_CPNU}{
-            file_number}&SoloActivos=false"
+        url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
         if res.status_code == 503:
             raise HTTPException(status_code=503, detail="Pagina no disponible")
