@@ -171,7 +171,7 @@ class RestService:
     def new_actuacion_process(
         self, file_number: str, date_actuacion_str: str
     ) -> Optional[Union[str, None]]:
-        """Validate if a process has a action.
+        """Validate if a process has an action.
 
         Args:
             file_number (str): File number of the process.

@@ -22,80 +22,39 @@ import json
 class SeleniumService:
     def __init__(self):
         self.chrome_options = Options()
-        self.chrome_options.add_argument('--headless')
-        self.chrome_options.add_argument('--no-sandbox')
-        self.chrome_options.add_argument('--disable-dev-shm-usage')
+        self.chrome_options.add_argument("--headless")
+        self.chrome_options.add_argument("--no-sandbox")
+        self.chrome_options.add_argument("--disable-dev-shm-usage")
         self.chrome_options.add_argument(
-            '--disable-blink-features=AutomationControlled')
+            "--disable-blink-features=AutomationControlled"
+        )
         self.driver = None
-        self.df = pd.read_csv('Data/offices.csv')
+        self.df = pd.read_csv("Data/offices.csv")
         self.lock = threading.Lock()
 
     def close(self):
-        """Close instance of driver Chrome.
-        """
+        """Close instance of driver Chrome."""
         if self.driver:
             self.driver.quit()
             self.driver = None  # Establece el driver a None después de cerrarlo
 
     def open(self):
-        """Create instance of Chrome.
-        """
-        self.driver = webdriver.Chrome(service=Service(
-            ChromeDriverManager().install()), options=self.chrome_options)
-
-    def get_office_url(self, office_name, url_juzgado):
-        print(url_juzgado)
-        """Get office url given name of the office and url_juzgado.
-
-        Args:
-            officeName (str): Office name.
-            url_juzgafo (str): juzgado url.
-
-        Returns:
-            str: url of the office.
-        """
-        print("Inicio de SeleniumService")
-        self.open()
-        words_list = office_name.split()
-        city = words_list[-1]
-
-        self.driver.get(url_juzgado)
-
-        links = self.driver.find_elements(By.TAG_NAME, "a")
-
-        for link in links:
-            text = link.text
-            if city.lower() in text.lower():
-                link.click()
-                break
-
-        time.sleep(3)
-
-        value_despacho = words_list[1]
-
-        links = self.driver.find_elements(By.TAG_NAME, "a")
-        for link in links:
-            text = link.text
-            href = link.get_attribute("href")
-            if value_despacho.lower() in text.lower():
-                self.close()
-                return href
-        self.close()
-        return None
+        """Create instance of Chrome."""
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=self.chrome_options,
+        )
 
     def get_office_url_df(self, office_name):
         office_name = clean_string(office_name)
         with self.lock:
             res = self.df[self.df["Nombre_despacho"] == office_name]
             if res.empty:
-                raise HTTPException(
-                    status_code=404, detail="Juzgado no encontrado")
+                raise HTTPException(status_code=404, detail="Juzgado no encontrado")
             return res["Link_Despacho"].iloc[0]
 
     async def get_offices(self):
-        """Get office links from page interactions using selenium.
-        """
+        """Get office links from page interactions using selenium."""
         web_scraper_service = BeatifulSoupService()
 
         dict_offices = web_scraper_service.get_court_offices()
@@ -116,42 +75,56 @@ class ScrapeThread(threading.Thread):
         self.df = df
         self.lock = lock
         self.chrome_options = Options()
-        self.chrome_options.add_argument('--headless')
-        self.chrome_options.add_argument('--no-sandbox')
-        self.chrome_options.add_argument('--disable-dev-shm-usage')
+        self.chrome_options.add_argument("--headless")
+        self.chrome_options.add_argument("--no-sandbox")
+        self.chrome_options.add_argument("--disable-dev-shm-usage")
         self.chrome_options.add_argument(
-            '--disable-blink-features=AutomationControlled')
+            "--disable-blink-features=AutomationControlled"
+        )
 
     def run(self):
-        """Update dataframe while checking for duplicates and delete them.
-        """
+        """Update dataframe while checking for duplicates and delete them."""
         # Create chrome driver instance
-        self.driver = webdriver.Chrome(service=Service(
-            ChromeDriverManager().install()), options=self.chrome_options)
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=self.chrome_options,
+        )
         for office in self.list_offices:
             # Iterate in the list of urls and get the name of the office
             self.driver.get(office)
             # Get city list
             principal_div_map = self.driver.find_element(
-                By.CLASS_NAME, 'principalesMapa')
-            item_list = principal_div_map.find_elements(By.TAG_NAME, 'li')
+                By.CLASS_NAME, "principalesMapa"
+            )
+            item_list = principal_div_map.find_elements(By.TAG_NAME, "li")
             for item in item_list:
                 item.click()
                 time.sleep(3)
                 # Obtain name of the city
-                city_map = self.driver.find_element(By.ID, 'titleD')
+                city_map = self.driver.find_element(By.ID, "titleD")
 
-                div = self.driver.find_element(By.ID, 'selected')
-                item_list = div.find_elements(By.TAG_NAME, 'li')
+                div = self.driver.find_element(By.ID, "selected")
+                item_list = div.find_elements(By.TAG_NAME, "li")
                 for li in item_list:
-                    a_tag = li.find_elements(By.TAG_NAME, 'a')
+                    a_tag = li.find_elements(By.TAG_NAME, "a")
                     with self.lock:
-                        self.df = pd.concat([self.df, pd.DataFrame(
-                            {"Ciudad_Mapa": [city_map.text], "Nombre_despacho": [
-                                a_tag[0].text], "Link_Despacho": [a_tag[0].get_attribute("href")]}
-                        )], ignore_index=True)
+                        self.df = pd.concat(
+                            [
+                                self.df,
+                                pd.DataFrame(
+                                    {
+                                        "Ciudad_Mapa": [city_map.text],
+                                        "Nombre_despacho": [a_tag[0].text],
+                                        "Link_Despacho": [
+                                            a_tag[0].get_attribute("href")
+                                        ],
+                                    }
+                                ),
+                            ],
+                            ignore_index=True,
+                        )
                         self.df.drop_duplicates()
-                go_back = self.driver.find_element(By.ID, 'atras')
+                go_back = self.driver.find_element(By.ID, "atras")
                 go_back.click()
                 time.sleep(3)
         self.driver.close()
@@ -169,18 +142,18 @@ class BeatifulSoupService:
             str: Office url.
         """
         print("Inicio de búsqueda de enlace del juzgado")
-        words_list = re.sub(r'\b\d+\b', '', office_name).split()
+        words_list = re.sub(r"\b\d+\b", "", office_name).split()
         tama = len(words_list)
-        words_list = words_list[:tama - 2]
+        words_list = words_list[: tama - 2]
         links_map = {}
 
         response = requests.get(const.URL_RAMA_JUDICIAL, verify=False)
-        doc = BeautifulSoup(response.text, 'html.parser')
+        doc = BeautifulSoup(response.text, "html.parser")
 
-        links = doc.find_all('a')
+        links = doc.find_all("a")
 
         for link in links:
-            href = link.get('href')
+            href = link.get("href")
             text = link.get_text()
             links_map[text] = href
 
@@ -224,16 +197,21 @@ class BeatifulSoupService:
             str: Url of electronic documents.
         """
         print("Inicio de búsqueda de enlace de estados")
-        links = []
 
         print(url_despacho)
         response = requests.get(url_despacho, verify=False)
-        doc = BeautifulSoup(response.content, 'html.parser')
+        soup = BeautifulSoup(response.content, "html.parser")
 
-        index_estados = 0
         year = str(datetime.now().year)
 
-        elements = doc.find_all(class_="layouts level-1")
+        h4_tags = soup.find_all('h4', text='Estados Electrónicos')
+        next_div = h4_tags[0].find_next_sibling('div')
+        a_tags = next_div.find_all('a')
+        for a_tag in a_tags:
+            if year in a_tag.text:
+                return const.URL_RAMA_JUDICIAL_INICIO + a_tag.attrs["href"]
+
+        """elements = soup.find_all(class_="layouts level-1")
         for element in elements:
             i = 0
             titles = element.select("h4")
@@ -251,7 +229,7 @@ class BeatifulSoupService:
                     links.append(href)
 
         print("Enviando enlace de estados")
-        return const.URL_RAMA_JUDICIAL_INICIO + links[index_estados - 1]
+        return const.URL_RAMA_JUDICIAL_INICIO + links[index_estados - 1]"""
 
     def get_court_offices(self) -> Dict[str, str]:
         """Get each office name with the url.
@@ -259,33 +237,48 @@ class BeatifulSoupService:
         Returns:
             Dict[str,str]: office name : url of the office.
         """
-        offices = ["Juzgados", "Tribunales", "Tierras",
-                   "Justicia", "Jurisdiccion", "Centro"]
+        offices = [
+            "Juzgados",
+            "Tribunales",
+            "Tierras",
+            "Justicia",
+            "Jurisdiccion",
+            "Centro",
+        ]
         try:
-            response = requests.get(
-                const.URL_RAMA_JUDICIAL, verify=False, timeout=15)
+            response = requests.get(const.URL_RAMA_JUDICIAL, verify=False, timeout=15)
         except requests.exceptions.Timeout:
             # If requesting the page is taking so long, read the last json.
-            with open("Data/offices.json", 'r') as file:
+            with open("Data/offices.json", "r") as file:
                 res = json.load(file)
                 return res
-        doc = BeautifulSoup(response.text, 'html.parser')
-        links = doc.find_all('a')
+        doc = BeautifulSoup(response.text, "html.parser")
+        links = doc.find_all("a")
         links_map = {}
         for link in links:
-            href = link.get('href')
+            href = link.get("href")
             text = link.get_text()
             links_map[text] = href
         res = {}
-        not_offices = ["Consulta", "Corte", "Guia", "Gu\u00eda",
-                       "Informaci\u00f3n", "Tribunales", "Portal", "Justicia"]
+        not_offices = [
+            "Consulta",
+            "Corte",
+            "Guia",
+            "Gu\u00eda",
+            "Informaci\u00f3n",
+            "Tribunales",
+            "Portal",
+            "Justicia",
+        ]
         for key in list(links_map.keys()):
             for office in offices:
-                if office in key and all(substring not in key for substring in not_offices):
+                if office in key and all(
+                    substring not in key for substring in not_offices
+                ):
                     res[key] = links_map[key]
 
         # Update the json file
-        with open("Data/offices.json", 'w') as file:
+        with open("Data/offices.json", "w") as file:
             json.dump(res, file)
 
         return res
