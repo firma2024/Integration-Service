@@ -8,7 +8,6 @@ import json
 
 from fastapi import HTTPException
 import constants.constants as const
-from utils.utils import get_defendant_and_plaintiff
 
 
 class RestService:
@@ -35,10 +34,7 @@ class RestService:
         if not res_json["procesos"]:
             raise HTTPException(status_code=404, detail="Proceso no encontrado.")
 
-        defendant, plaintiff = get_defendant_and_plaintiff(
-            res_json["procesos"][0]["sujetosProcesales"]
-        )
-
+        subjects = res_json["procesos"][0]["sujetosProcesales"]
         res_data = res_json["procesos"][0]
         department = res_data["departamento"]
         office = res_data["despacho"]
@@ -60,8 +56,7 @@ class RestService:
             numeroRadicado=file_number,
             despacho=office,
             departamento=department,
-            demandante=plaintiff,
-            demandado=defendant,
+            sujetos=subjects,
             fechaRadicacion=date_filed,
             tipoProceso=res_json["tipoProceso"],
             ubicacionExpediente=res_json["ubicacion"],
@@ -92,10 +87,7 @@ class RestService:
         if not res_json["procesos"]:
             raise HTTPException(status_code=404, detail="Proceso no encontrado.")
 
-        defendant, plaintiff = get_defendant_and_plaintiff(
-            res_json["procesos"][0]["sujetosProcesales"]
-        )
-
+        subjects = res_json["procesos"][0]["sujetosProcesales"]
         res_data = res_json["procesos"][0]
         department = res_data["departamento"]
         office = res_data["despacho"]
@@ -158,8 +150,7 @@ class RestService:
             numeroRadicado=file_number,
             despacho=office,
             departamento=department,
-            demandante=plaintiff,
-            demandado=defendant,
+            sujetos=subjects,
             fechaRadicacion=date_filed,
             actuaciones=actuaciones,
             tipoProceso=res_json["tipoProceso"],

@@ -22,8 +22,7 @@ class PreProceso:
     numeroRadicado: str
     despacho: str
     departamento: str
-    demandante: str
-    demandado: str
+    sujetos: str
     fechaRadicacion: datetime
     tipoProceso: str
     ubicacionExpediente: str
@@ -41,8 +40,7 @@ class Proceso:
     numeroRadicado: str
     despacho: str
     departamento: str
-    demandante: str
-    demandado: str
+    sujetos: str
     fechaRadicacion: datetime
     actuaciones: List[Actuacion]
     tipoProceso: str
@@ -52,8 +50,6 @@ class Proceso:
 @dataclass
 class ActuacionEmail(BaseModel):
     id: int
-    demandante: str
-    demandado: str
     actuacion: str
     radicado: str
     anotacion: str
