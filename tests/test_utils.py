@@ -21,12 +21,6 @@ class TestUtils(unittest.TestCase):
     def test_clean_string(self, name, office_name, expected):
         self.assertEqual(clean_string(office_name), expected)
 
-    def test_get_defendant_and_plaintiff(self):
-        subjects = "Demandante: Juan Paez | Demandado: Daniel Barreto"
-        plaintiff, defendant = get_defendant_and_plaintiff(subjects)
-        assert plaintiff == "Juan Paez"
-        assert defendant == "Daniel Barreto"
-
     @parameterized.expand(
         [
             ["no_split", [1, 2, 3, 4], 1, [[1, 2, 3, 4]]],
@@ -37,24 +31,26 @@ class TestUtils(unittest.TestCase):
         assert list(split_list(lst, n)) == expected
 
     def test_replace_placeholders_email(self):
-        html = """{{ id }}, {{ demandante }}, 
-                  {{ demandado }}, {{ actuacion }}, 
+        html = """{{ id }}, {{ actuacion }}, 
                   {{ radicado }}, {{ anotacion }}, 
                   {{ fechaActuacion }}, {{ emailAbogado }}, 
                   {{ nameAbogado }}, {{ link }}"""
-        
+
         actuacion_email = ActuacionEmail(
             id=1,
-            demandante="Demandante Ejemplo",
-            demandado="Demandado Ejemplo",
-            actuacion="Actuacion Ejemplo",
-            radicado="Radicado Ejemplo",
-            anotacion="Anotacion Ejemplo",
-            fechaActuacion="Fecha Ejemplo",
-            emailAbogado="Email Ejemplo",
-            nameAbogado="Nombre Abogado Ejemplo",
-            link="Link Ejemplo"
+            actuacion="Test1",
+            radicado="Test2",
+            anotacion="Test3",
+            fechaActuacion="Test4",
+            emailAbogado="Test5",
+            nameAbogado="Juan",
+            link="example.com",
         )
-        res = replace_placeholders_email(
-            html,actuacion_email
+        res = replace_placeholders_email(html, actuacion_email)
+        assert (
+            res
+            == """1, Test1, 
+                  Test2, Test3, 
+                  Test4, Test5, 
+                  Juan, example.com"""
         )

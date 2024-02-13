@@ -2,7 +2,7 @@ import unittest
 from parameterized import parameterized
 from utils.utils import *
 from service.WebScraperService import SeleniumService,BeatifulSoupService
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from selenium import webdriver
 from fastapi import HTTPException
 
@@ -52,8 +52,18 @@ class TestBeaitfulSoupService(unittest.TestCase):
 
         assert self.beatiful_soup_service.get_url_estados(office_url) == expected_url
 
+    @patch('requests.get')
+    def test_get_court_offices_success(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.text = "<html><a href='url1'>Juzgados</a><a href='url2'>Tribunales</a></html>"
+        mock_get.return_value = mock_response
 
-if __name__ == "__main__":
-    unittest.main()
+        # Ejecutar el método y obtener el resultado
+        result = self.beatiful_soup_service.get_court_offices()
+
+        # Verificar el resultado esperado
+        expected_result = {"Juzgados": "url1"}
+        self.assertEqual(result, expected_result)
         
         
