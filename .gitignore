@@ -2,3 +2,5 @@ venv/
 **/*_pycache__
 *.deb
 *.env
+*.coverage
+*.vscode

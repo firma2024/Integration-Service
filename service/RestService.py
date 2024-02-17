@@ -6,13 +6,12 @@ from model.model import Actuacion, Proceso, PreProceso
 import requests
 import json
 
-from fastapi import HTTPException
 import constants.constants as const
 
 
 class RestService:
 
-    def get_process_info(self, file_number: str) -> Proceso:
+    def get_process_info(self, file_number: str) -> PreProceso:
         """Get process information by CPNU.
 
         Args:
@@ -23,7 +22,7 @@ class RestService:
             HTTPException 404: When the process does not exit in the CPNU.
 
         Returns:
-            Proceso: Process information.
+            PreProceso: Process information.
         """
         url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
@@ -162,7 +161,7 @@ class RestService:
     def new_actuacion_process(
         self, file_number: str, date_actuacion_str: str
     ) -> Optional[Union[str, None]]:
-        """Validate if a process has a action.
+        """Validate if a process has an action.
 
         Args:
             file_number (str): File number of the process.
@@ -194,13 +193,13 @@ class RestService:
             raise HTTPException(503, detail=f"Error al realizar la consulta: {e}")
 
     def get_last_actuacion(
-        self, number_process: str, last_date_actuacion: str
+        self, number_process: str, last_date_actuacion: datetime
     ) -> Actuacion:
         """Get last action of a process.
 
         Args:
             number_process (str): Process number.
-            last_date_actuacion (str): Last date action has an update.
+            last_date_actuacion (datetime): Last date action had an update.
 
         Raises:
             HTTPException: 503 When the CPNU rest API is down.

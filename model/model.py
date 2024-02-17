@@ -48,7 +48,7 @@ class Proceso:
 
 
 @dataclass
-class ActuacionEmail(BaseModel):
+class ActuacionEmail:
     id: int
     actuacion: str
     radicado: str

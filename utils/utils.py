@@ -20,7 +20,7 @@ def replace_placeholders_email(html_content: str, action: ActuacionEmail) -> str
     return html_content
 
 
-def split_list(lst: List[str], n: int) -> List[str]:
+def split_list(lst: List[str], n: int) -> List[str]: # type: ignore
     """Generate different partitions of an array given a value n.
 
     Args:
@@ -54,5 +54,4 @@ def clean_string(office: str) -> str:
         office = office.replace("  ", " ")
     if office.endswith(" "):
         office = office.rstrip()
-    print(office)
     return office
