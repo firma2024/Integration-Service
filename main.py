@@ -19,19 +19,10 @@ email_service = EmailService()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Before the service start
-    asyncio.create_task(validate_hours())
+    asyncio.create_task(selenium_service.get_offices())
     yield
 
 app = FastAPI(lifespan=lifespan)
-
-
-async def validate_hours():
-    """If two hours passes the application will update the df with the offices.
-    """
-    while True:
-        await asyncio.sleep(60*60*2)  # Wait two hours
-        await selenium_service.get_offices()
-
 
 @app.get("/api/integration/getUrl/despacho={office_name}/year={year}")
 def get_office(office_name: str, year:str) -> Dict[str, str]:

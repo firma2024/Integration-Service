@@ -1,4 +1,4 @@
-from utils.utils import split_list, clean_string
+from utils.utils import  clean_string
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -14,15 +14,15 @@ import threading
 from fastapi import HTTPException
 from bs4 import BeautifulSoup
 import requests
-from datetime import datetime
-import re
+from requests import ConnectTimeout
+import asyncio
 import json
-
 
 class SeleniumService:
     def __init__(self):
         self.df = pd.read_csv("Data/offices.csv")
         self.lock = threading.Lock()
+        
 
     def close(self):
         """Close instance of driver Chrome."""
@@ -51,13 +51,17 @@ class SeleniumService:
 
         dict_offices = web_scraper_service.get_court_offices()
         list_offices = [value for value in dict_offices.values()]
+        i = 0
+        
+        while True:
+            try:
+                await asyncio.sleep(60*60*3)  # Wait three hours
+                t = ScrapeThread([list_offices[i]], self.df, self.lock)
+                t.start()
+                i = (i + 1) % len(list_offices)
+            except ConnectTimeout:
+                await asyncio.sleep(60*60*6)  # Wait six hours
 
-        num_threads = 1
-        # Split the list into the number of threads to be used to update the df
-        for office in split_list(list_offices, num_threads):
-            # Get name of the office and url of the sub-offices
-            t = ScrapeThread(office, self.df, self.lock)
-            t.start()
 
 
 class ScrapeThread(threading.Thread):
@@ -124,7 +128,7 @@ class ScrapeThread(threading.Thread):
 
 class BeatifulSoupService:
 
-    def get_url_estados(self, url_despacho: str, year:str):
+    def get_url_estados(self, url_despacho: str, year: str):
         """Get url of the electronic documents.
 
         Args:
@@ -140,9 +144,9 @@ class BeatifulSoupService:
         response = requests.get(url_despacho, verify=False)
         soup = BeautifulSoup(response.content, "html.parser")
 
-        h4_tags = soup.find_all('h4', text='Estados Electrónicos')
-        next_div = h4_tags[0].find_next_sibling('div')
-        a_tags = next_div.find_all('a')
+        h4_tags = soup.find_all("h4", text="Estados Electrónicos")
+        next_div = h4_tags[0].find_next_sibling("div")
+        a_tags = next_div.find_all("a")
         for a_tag in a_tags:
             if year in a_tag.text:
                 return const.URL_RAMA_JUDICIAL_INICIO + a_tag.attrs["href"]
