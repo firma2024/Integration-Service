@@ -33,8 +33,8 @@ async def validate_hours():
         await selenium_service.get_offices()
 
 
-@app.get("/api/integration/getUrl/despacho={office_name}")
-def get_office(office_name: str) -> Dict[str, str]:
+@app.get("/api/integration/getUrl/despacho={office_name}/year={year}")
+def get_office(office_name: str, year) -> Dict[str, str]:
     """Obtain url office given an office name
 
     Args:
@@ -44,7 +44,7 @@ def get_office(office_name: str) -> Dict[str, str]:
         Dict[str,str]: Dictionary with the office url.
     """
     url_court = selenium_service.get_office_url_df(office_name)
-    url_estados = web_scraper_service.get_url_estados(url_court)
+    url_estados = web_scraper_service.get_url_estados(url_court, year)
     return {"url_despacho": url_estados}
 
 

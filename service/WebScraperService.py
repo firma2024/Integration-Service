@@ -132,7 +132,7 @@ class ScrapeThread(threading.Thread):
 
 class BeatifulSoupService:
 
-    def get_url_estados(self, url_despacho: str):
+    def get_url_estados(self, url_despacho: str, year):
         """Get url of the electronic documents.
 
         Args:
@@ -146,8 +146,6 @@ class BeatifulSoupService:
         print(url_despacho)
         response = requests.get(url_despacho, verify=False)
         soup = BeautifulSoup(response.content, "html.parser")
-
-        year = str(datetime.now().year)
 
         h4_tags = soup.find_all('h4', text='Estados Electrónicos')
         next_div = h4_tags[0].find_next_sibling('div')
