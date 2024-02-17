@@ -5,3 +5,8 @@ webdriver_manager
 fastapi
 uvicorn[standard]
 gradio_client
+pandas
+numpy
+parameterized
+unittest-xml-reporting
+pytest-cov
