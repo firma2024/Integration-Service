@@ -34,11 +34,12 @@ async def validate_hours():
 
 
 @app.get("/api/integration/getUrl/despacho={office_name}/year={year}")
-def get_office(office_name: str, year) -> Dict[str, str]:
+def get_office(office_name: str, year:str) -> Dict[str, str]:
     """Obtain url office given an office name
 
     Args:
         office_name (str): Office to be searched
+        year (str): Year of the last action.
 
     Returns:
         Dict[str,str]: Dictionary with the office url.

@@ -21,14 +21,6 @@ import json
 
 class SeleniumService:
     def __init__(self):
-        self.chrome_options = Options()
-        self.chrome_options.add_argument("--headless")
-        self.chrome_options.add_argument("--no-sandbox")
-        self.chrome_options.add_argument("--disable-dev-shm-usage")
-        self.chrome_options.add_argument(
-            "--disable-blink-features=AutomationControlled"
-        )
-        self.driver = None
         self.df = pd.read_csv("Data/offices.csv")
         self.lock = threading.Lock()
 
@@ -132,11 +124,12 @@ class ScrapeThread(threading.Thread):
 
 class BeatifulSoupService:
 
-    def get_url_estados(self, url_despacho: str, year):
+    def get_url_estados(self, url_despacho: str, year:str):
         """Get url of the electronic documents.
 
         Args:
             url_despacho (str): Office url.
+            year (str): Year of the last action.
 
         Returns:
             str: Url of electronic documents.
