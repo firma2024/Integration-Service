@@ -24,19 +24,6 @@ class SeleniumService:
         self.df = pd.read_csv("Data/offices.csv")
         self.lock = threading.Lock()
 
-    def close(self):
-        """Close instance of driver Chrome."""
-        if self.driver:
-            self.driver.quit()
-            self.driver = None  # Establece el driver a None después de cerrarlo
-
-    def open(self):
-        """Create instance of Chrome."""
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=self.chrome_options,
-        )
-
     def get_office_url_df(self, office_name):
         office_name = clean_string(office_name)
         with self.lock:
