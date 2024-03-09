@@ -5,13 +5,14 @@ from datetime import datetime
 from model.model import Actuacion, Proceso, PreProceso
 import requests
 import json
+from fastapi import Response
 
 import constants.constants as const
 
 
 class RestService:
 
-    def get_process_info(self, file_number: str) -> PreProceso:
+    def get_process_info(self, file_number: str):
         """Get process information by CPNU.
 
         Args:
@@ -27,11 +28,13 @@ class RestService:
         url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
         if res.status_code == 503:
-            raise HTTPException(status_code=503, detail="Pagina no disponible")
+            return Response(content="Pagina no disponible", status_code=503)
 
         res_json = json.loads(res.text)
         if not res_json["procesos"]:
-            raise HTTPException(status_code=404, detail="Proceso no encontrado.")
+            return Response(content="Proceso no encontrado.", status_code=404)
+        if res_json["procesos"][0]["esPrivado"]:
+            return Response(content="Proceso privado.", status_code=400)
 
         subjects = res_json["procesos"][0]["sujetosProcesales"]
         res_data = res_json["procesos"][0]
