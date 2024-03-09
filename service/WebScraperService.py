@@ -186,6 +186,6 @@ class BeatifulSoupService:
 
         # Update the json file
         with open("Data/offices.json", "w") as file:
-            json.dump(res, file)
+            json.dump(res, file,indent=2)
 
         return res
