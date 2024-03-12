@@ -5,14 +5,13 @@ from datetime import datetime
 from model.model import Actuacion, Proceso, PreProceso
 import requests
 import json
-from fastapi import Response
 
 import constants.constants as const
 
 
 class RestService:
 
-    def get_process_info(self, file_number: str):
+    def get_process_info(self, file_number: str) -> PreProceso:
         """Get process information by CPNU.
 
         Args:
@@ -21,6 +20,7 @@ class RestService:
         Raises:
             HTTPException 503: When the CPNU rest API is down.
             HTTPException 404: When the process does not exit in the CPNU.
+            HTTPException 400: When the process is private.
 
         Returns:
             PreProceso: Process information.
@@ -28,13 +28,13 @@ class RestService:
         url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         res = requests.get(url_cpnu_file_number)
         if res.status_code == 503:
-            return Response(content="Pagina no disponible", status_code=503)
+            raise HTTPException(status_code=503, detail="Pagina no disponible")
 
         res_json = json.loads(res.text)
         if not res_json["procesos"]:
-            return Response(content="Proceso no encontrado.", status_code=404)
+            raise HTTPException(status_code=404, detail="Proceso no encontrado.")
         if res_json["procesos"][0]["esPrivado"]:
-            return Response(content="Proceso privado.", status_code=400)
+            raise HTTPException(status_code=400, detail="Proceso privado.")
 
         subjects = res_json["procesos"][0]["sujetosProcesales"]
         res_data = res_json["procesos"][0]
@@ -163,7 +163,7 @@ class RestService:
 
     def new_actuacion_process(
         self, file_number: str, date_actuacion_str: str
-    ):
+    ) -> Optional[Union[bool, None]]:
         """Validate if a process has an action.
 
         Args:
@@ -174,7 +174,7 @@ class RestService:
             HTTPException: 503 When the CPNU rest API is down.
 
         Returns:
-            Optional[Union[str, None]]: str if action exists, else None.
+            Optional[Union[bool, None]]: True if action exists, else None.
         """
         url_cpnu_file_number = f"{const.URL_CPNU}{file_number}&SoloActivos=false"
         try:
@@ -197,7 +197,7 @@ class RestService:
 
     def get_last_actuacion(
         self, number_process: int, date_actuacion_str: str
-    ):
+    ) -> list[Actuacion]:
         """Get last action of a process.
 
         Args:
@@ -208,7 +208,7 @@ class RestService:
             HTTPException: 503 When the CPNU rest API is down.
 
         Returns:
-            Actuacion: Action details.
+            List[Actuacion]: Action details.
         """
         url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{number_process}?pagina=1"
         try:
@@ -225,13 +225,15 @@ class RestService:
                     print("Actuacion encontrada  ", actuacion_date)
                     actuacion_name = actuacion.get("actuacion")
                     anotacion = actuacion.get("anotacion")
-                    registro_date = datetime.fromisoformat(actuacion.get("fechaRegistro"))
+                    registro_date = datetime.fromisoformat(
+                        actuacion.get("fechaRegistro")
+                    )
                     proceso = actuacion.get("llaveProceso")
 
                     existDocument = (
                         True
                         if actuacion["fechaInicial"] is not None
-                           and actuacion["fechaFinal"] is not None
+                        and actuacion["fechaFinal"] is not None
                         else False
                     )
 
