@@ -163,7 +163,7 @@ class RestService:
 
     def new_actuacion_process(
         self, file_number: str, date_actuacion_str: str
-    ) -> Optional[Union[str, None]]:
+    ):
         """Validate if a process has an action.
 
         Args:
@@ -187,8 +187,8 @@ class RestService:
             date_actuacion = datetime.fromisoformat(date_actuacion_str)
 
             if last_date_actuacion > date_actuacion:
-                print("Nueva actuacion")
-                return last_date_actuacion
+                print("Nueva actuacion ", last_date_actuacion)
+                return True
 
             return None
 
@@ -196,12 +196,12 @@ class RestService:
             raise HTTPException(503, detail=f"Error al realizar la consulta: {e}")
 
     def get_last_actuacion(
-        self, number_process: str, last_date_actuacion: datetime
-    ) -> Actuacion:
+        self, number_process: int, date_actuacion_str: str
+    ):
         """Get last action of a process.
 
         Args:
-            number_process (str): Process number.
+            number_process (int): Process number.
             last_date_actuacion (datetime): Last date action had an update.
 
         Raises:
@@ -212,30 +212,30 @@ class RestService:
         """
         url_cpnu_actuaciones = f"{const.URL_CPNU_ACTUACIONES}{number_process}?pagina=1"
         try:
+            list_new_actuaciones = []
             response = requests.get(url_cpnu_actuaciones)
             response.raise_for_status()
             data = response.json()
             actuaciones_list = data.get("actuaciones", [])
+            date_actuacion = datetime.fromisoformat(date_actuacion_str)
 
-            for actuacion in actuaciones_list:
+            for actuacion in reversed(actuaciones_list):
                 actuacion_date = datetime.fromisoformat(actuacion.get("fechaActuacion"))
-                if actuacion_date == last_date_actuacion:
-                    print("Actuacion encontrada")
+                if actuacion_date > date_actuacion:
+                    print("Actuacion encontrada  ", actuacion_date)
                     actuacion_name = actuacion.get("actuacion")
                     anotacion = actuacion.get("anotacion")
-                    registro_date = datetime.fromisoformat(
-                        actuacion.get("fechaRegistro")
-                    )
+                    registro_date = datetime.fromisoformat(actuacion.get("fechaRegistro"))
                     proceso = actuacion.get("llaveProceso")
 
                     existDocument = (
                         True
                         if actuacion["fechaInicial"] is not None
-                        and actuacion["fechaFinal"] is not None
+                           and actuacion["fechaFinal"] is not None
                         else False
                     )
 
-                    return Actuacion(
+                    new_actuacion = Actuacion(
                         nombreActuacion=actuacion_name,
                         anotacion=anotacion,
                         fechaActuacion=actuacion_date,
@@ -245,6 +245,9 @@ class RestService:
                         fechaFinaliza=actuacion["fechaFinal"],
                         existDocument=existDocument,
                     )
+                    list_new_actuaciones.append(new_actuacion)
+
+            return list_new_actuaciones
 
         except requests.exceptions.RequestException as e:
             raise HTTPException(503, detail=f"Error al realizar la consulta: {e}")
