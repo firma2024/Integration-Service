@@ -6,9 +6,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
+
+
 class EmailService:
-    def send_email(self, receiver: str, action: ActuacionEmail)->bool:
+    def send_email(self, receiver: str, action: ActuacionEmail) -> bool:
         """Send email with the HTML format.
 
         Args:
@@ -22,7 +25,6 @@ class EmailService:
         with open('static/email.html', 'r') as file:
             html_content = file.read()
             html_content_formatted = replace_placeholders_email(html_content, action)
-
 
         # Create MIME multipart message y and set HTML email.
         msg = MIMEMultipart()
@@ -42,4 +44,3 @@ class EmailService:
         except smtplib.SMTPException as e:
             print("Error al enviar el correo:", e)
             return False
-
