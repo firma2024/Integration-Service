@@ -12,16 +12,6 @@ class TestSeleniumService(unittest.TestCase):
     def setUpClass(cls):
         cls.selenium_service = SeleniumService()
 
-    def test_close(self):
-        self.selenium_service.driver = MagicMock()
-
-        self.selenium_service.close()
-
-        assert self.selenium_service.driver is None
-
-    def test_open(self):
-        self.selenium_service.open()
-        assert isinstance(self.selenium_service.driver, webdriver.Chrome)
 
     @parameterized.expand(
         [
@@ -56,7 +46,7 @@ class TestBeaitfulSoupService(unittest.TestCase):
         )
         expected_url = f"{office_url}/181"
 
-        assert self.beatiful_soup_service.get_url_estados(office_url) == expected_url
+        assert self.beatiful_soup_service.get_url_estados(office_url,"2024") == expected_url
 
     @patch("requests.get")
     @patch("builtins.open", new_callable=unittest.mock.mock_open)

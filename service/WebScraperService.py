@@ -1,4 +1,4 @@
-from utils.utils import split_list, clean_string
+from utils.utils import clean_string
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -14,36 +14,15 @@ import threading
 from fastapi import HTTPException
 from bs4 import BeautifulSoup
 import requests
-from datetime import datetime
 import re
+import asyncio
 import json
 
 
 class SeleniumService:
     def __init__(self):
-        self.chrome_options = Options()
-        self.chrome_options.add_argument("--headless")
-        self.chrome_options.add_argument("--no-sandbox")
-        self.chrome_options.add_argument("--disable-dev-shm-usage")
-        self.chrome_options.add_argument(
-            "--disable-blink-features=AutomationControlled"
-        )
-        self.driver = None
         self.df = pd.read_csv("Data/offices.csv")
         self.lock = threading.Lock()
-
-    def close(self):
-        """Close instance of driver Chrome."""
-        if self.driver:
-            self.driver.quit()
-            self.driver = None  # Establece el driver a None después de cerrarlo
-
-    def open(self):
-        """Create instance of Chrome."""
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=self.chrome_options,
-        )
 
     def get_office_url_df(self, office_name):
         office_name = clean_string(office_name)
@@ -59,13 +38,16 @@ class SeleniumService:
 
         dict_offices = web_scraper_service.get_court_offices()
         list_offices = [value for value in dict_offices.values()]
+        i = 0
 
-        num_threads = 1
-        # Split the list into the number of threads to be used to update the df
-        for office in split_list(list_offices, num_threads):
-            # Get name of the office and url of the sub-offices
-            t = ScrapeThread(office, self.df, self.lock)
-            t.start()
+        while True:
+            try:
+                await asyncio.sleep(60 * 60 * 3)  # Wait three hours
+                t = ScrapeThread([list_offices[i]], self.df, self.lock)
+                t.start()
+                i = (i + 1) % len(list_offices)
+            except ConnectionError:
+                await asyncio.sleep(60 * 60 * 6)  # Wait six hours
 
 
 class ScrapeThread(threading.Thread):
@@ -132,11 +114,12 @@ class ScrapeThread(threading.Thread):
 
 class BeatifulSoupService:
 
-    def get_url_estados(self, url_despacho: str):
+    def get_url_estados(self, url_despacho: str, year: str):
         """Get url of the electronic documents.
 
         Args:
             url_despacho (str): Office url.
+            year (str): Year of the last action.
 
         Returns:
             str: Url of electronic documents.
@@ -146,12 +129,11 @@ class BeatifulSoupService:
         print(url_despacho)
         response = requests.get(url_despacho, verify=False)
         soup = BeautifulSoup(response.content, "html.parser")
-
-        year = str(datetime.now().year)
-
-        h4_tags = soup.find_all('h4', text='Estados Electrónicos')
-        next_div = h4_tags[0].find_next_sibling('div')
-        a_tags = next_div.find_all('a')
+        
+        pattern = re.compile(r'Estados\s+Electrónicos', re.IGNORECASE)
+        h4_tags = soup.find_all("h4", text=pattern)
+        next_div = h4_tags[0].find_next_sibling("div")
+        a_tags = next_div.find_all("a")
         for a_tag in a_tags:
             if year in a_tag.text:
                 return const.URL_RAMA_JUDICIAL_INICIO + a_tag.attrs["href"]
@@ -204,6 +186,6 @@ class BeatifulSoupService:
 
         # Update the json file
         with open("Data/offices.json", "w") as file:
-            json.dump(res, file)
+            json.dump(res, file,indent=2)
 
         return res

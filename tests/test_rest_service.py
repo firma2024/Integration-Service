@@ -26,7 +26,7 @@ class TestRestService(unittest.TestCase):
         if name in "no_action":
             assert result is None
         else:
-            assert result == datetime.fromisoformat(expected)
+            assert result == True
 
     @patch("requests.get")
     def test_get_process_info_success(self, mock_get):
@@ -41,7 +41,8 @@ class TestRestService(unittest.TestCase):
                 "departamento": "Department",
                 "despacho": "Office",
                 "idProceso": "123",
-                "fechaProceso": "2024-02-12"
+                "fechaProceso": "2024-02-12",
+                "esPrivado": false
                 
             }]
         }"""
@@ -93,14 +94,14 @@ class TestRestService(unittest.TestCase):
     @patch('requests.get')
     def test_get_last_actuacion_success(self, mock_get):
         number_process = "123456"
-        last_date_actuacion = datetime.fromisoformat("2024-02-12")
+        last_date_actuacion = "2024-02-12"
 
         # Mock response
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "actuaciones": [{
-                "fechaActuacion": "2024-02-12",
+                "fechaActuacion": "2024-02-13",
                 "actuacion": "Test Action",
                 "anotacion": "Test Annotation",
                 "fechaRegistro": "2024-02-12",
@@ -114,15 +115,16 @@ class TestRestService(unittest.TestCase):
         res = self.rest_service.get_last_actuacion(number_process, last_date_actuacion)
 
         # Assertions
-        assert isinstance(res, Actuacion)
-        assert res.nombreActuacion == "Test Action"
-        assert res.anotacion == "Test Annotation"
-        assert res.fechaActuacion == datetime.fromisoformat("2024-02-12")
-        assert res.fechaRegistro == datetime.fromisoformat("2024-02-12")
-        assert res.proceso == "Test Process Key"
-        assert res.fechaInicia == "2024-02-12"
-        assert res.fechaFinaliza == "2024-02-12"
-        assert res.existDocument == True
+        assert len(res) == 1
+        assert isinstance(res[0], Actuacion)
+        assert res[0].nombreActuacion == "Test Action"
+        assert res[0].anotacion == "Test Annotation"
+        assert res[0].fechaActuacion == datetime.fromisoformat("2024-02-13")
+        assert res[0].fechaRegistro == datetime.fromisoformat("2024-02-12")
+        assert res[0].proceso == "Test Process Key"
+        assert res[0].fechaInicia == "2024-02-12"
+        assert res[0].fechaFinaliza == "2024-02-12"
+        assert res[0].existDocument == True
 
     @patch('requests.get')
     def test_get_last_actuacion_request_exception(self, mock_get):

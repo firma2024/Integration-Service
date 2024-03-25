@@ -19,32 +19,24 @@ email_service = EmailService()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Before the service start
-    asyncio.create_task(validate_hours())
+    asyncio.create_task(selenium_service.get_offices())
     yield
 
 app = FastAPI(lifespan=lifespan)
 
-
-async def validate_hours():
-    """If two hours passes the application will update the df with the offices.
-    """
-    while True:
-        await asyncio.sleep(60*60*2)  # Wait two hours
-        await selenium_service.get_offices()
-
-
-@app.get("/api/integration/getUrl/despacho={office_name}")
-def get_office(office_name: str) -> Dict[str, str]:
+@app.get("/api/integration/getUrl/despacho={office_name}/year={year}")
+def get_office(office_name: str, year:str) -> Dict[str, str]:
     """Obtain url office given an office name
 
     Args:
         office_name (str): Office to be searched
+        year (str): Year of the last action.
 
     Returns:
         Dict[str,str]: Dictionary with the office url.
     """
     url_court = selenium_service.get_office_url_df(office_name)
-    url_estados = web_scraper_service.get_url_estados(url_court)
+    url_estados = web_scraper_service.get_url_estados(url_court, year)
     return {"url_despacho": url_estados}
 
 
@@ -87,13 +79,12 @@ def find_new_actuacion(request_body: List[ProcesoBuscar]) -> List[Actuacion]:
     list_actuaciones = []
     for item in request_body:
         print(item.file_number, item.date, item.number_process)
-        last_date_actuacion = rest_service.new_actuacion_process(
+        exist = rest_service.new_actuacion_process(
             item.file_number, item.date)
-        if last_date_actuacion:
-            list_actuaciones.append(
-                rest_service.get_last_actuacion(
-                    item.number_process, last_date_actuacion)
-            )
+        if exist:
+            new_actuaciones = rest_service.get_last_actuacion(item.number_process, item.date)
+            for act in new_actuaciones:
+                list_actuaciones.append(act)
     return list_actuaciones
 
 
