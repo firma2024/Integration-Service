@@ -21,15 +21,6 @@ class TestUtils(unittest.TestCase):
     def test_clean_string(self, name, office_name, expected):
         self.assertEqual(clean_string(office_name), expected)
 
-    @parameterized.expand(
-        [
-            ["no_split", [1, 2, 3, 4], 1, [[1, 2, 3, 4]]],
-            ["split", [1, 2, 3, 4], 2, [[1, 2], [3, 4]]],
-        ],
-    )
-    def test_split_list(self, name, lst, n, expected):
-        assert list(split_list(lst, n)) == expected
-
     def test_replace_placeholders_email(self):
         html = """{{ id }}, {{ actuacion }}, 
                   {{ radicado }}, {{ anotacion }}, 

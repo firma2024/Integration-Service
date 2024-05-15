@@ -4,3 +4,5 @@ venv/
 *.env
 *.coverage
 *.vscode
+*.idea
+*.pytest_cache
