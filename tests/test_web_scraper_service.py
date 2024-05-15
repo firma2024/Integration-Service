@@ -28,7 +28,7 @@ class TestSeleniumService(unittest.TestCase):
             [
                 "exist_in_df",
                 "JUZGADO 030 ADMINISTRATIVO  DE LA SECCIÓN SEGUNDA  DE BOGOTÁ ",
-                "https://www.ramajudicial.gov.co/web/juzgado-30-administrativo-de-bogota",
+                "https://portalhistorico.ramajudicial.gov.co/web/juzgado-30-administrativo-de-bogota",
             ],
             [
                 "not_in_df",
@@ -52,7 +52,7 @@ class TestBeaitfulSoupService(unittest.TestCase):
 
     def test_get_url_estados(self):
         office_url = (
-            "https://www.ramajudicial.gov.co/web/juzgado-30-administrativo-de-bogota"
+            "https://portalhistorico.ramajudicial.gov.co/web/juzgado-30-administrativo-de-bogota"
         )
         expected_url = f"{office_url}/181"
 
